@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import VerkKort from "../components/VerkKort.astro";
+import Lyskasse from "../components/Lyskasse.astro";
 import { alleVerk, TEKNIKK_NAVN } from "../lib/sanity";
 
 const alle: any[] = await alleVerk();
@@ -108,6 +109,8 @@ function url(endring: Record<string, string>) {
       )
     }
   </section>
+
+  <Lyskasse />
 </Base>
 
 <style>

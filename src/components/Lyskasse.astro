@@ -1,0 +1,270 @@
+---
+// Lyskasse for stor visning av verk.
+//
+// Bakgrunn: 13. august 2026 påpekte Christian at et verk bare fantes i
+// rutenettet, uten mulighet for å se det nærmere. På et nettsted der verket
+// er varen er det en reell mangel.
+//
+// Valgt løsning: native <dialog> med showModal(). Den gir fokusfelle,
+// Escape-lukking og bakteppe uten at vi skriver det selv, og den oppfører
+// seg riktig for skjermlesere.
+//
+// Uten JavaScript: hvert verk er en vanlig lenke til bildefila. Da åpnes
+// bildet i nettleseren i stedet. Ikke pent, men ikke ødelagt.
+//
+// Komponenten legges inn på sider som viser VerkKort. Finner skriptet ingen
+// utløsere, gjør det ingenting.
+---
+
+<dialog class="lyskasse" aria-label="Verk i stor visning">
+  <div class="lyskasse__ramme">
+    <button class="lyskasse__lukk" type="button" aria-label="Lukk stor visning">
+      Lukk
+    </button>
+
+    <figure class="lyskasse__figur">
+      <img class="lyskasse__bilde" alt="" decoding="async" />
+      <figcaption class="lyskasse__tekst">
+        <span class="lyskasse__tittel"></span>
+        <span class="lyskasse__meta meta"></span>
+      </figcaption>
+    </figure>
+
+    <nav class="lyskasse__nav" aria-label="Bla mellom verk">
+      <button class="lyskasse__blad" type="button" data-retning="-1" aria-label="Forrige verk">
+        Forrige
+      </button>
+      <span class="lyskasse__teller meta" aria-live="polite"></span>
+      <button class="lyskasse__blad" type="button" data-retning="1" aria-label="Neste verk">
+        Neste
+      </button>
+    </nav>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>(".lyskasse");
+  const utlosere = [...document.querySelectorAll<HTMLAnchorElement>("[data-lyskasse]")];
+
+  // Ingen verk på sida, ingenting å gjøre.
+  if (dialog && utlosere.length > 0) {
+    const bilde = dialog.querySelector<HTMLImageElement>(".lyskasse__bilde")!;
+    const tittel = dialog.querySelector<HTMLElement>(".lyskasse__tittel")!;
+    const meta = dialog.querySelector<HTMLElement>(".lyskasse__meta")!;
+    const teller = dialog.querySelector<HTMLElement>(".lyskasse__teller")!;
+    const nav = dialog.querySelector<HTMLElement>(".lyskasse__nav")!;
+    const blaKnapper = [...dialog.querySelectorAll<HTMLButtonElement>(".lyskasse__blad")];
+
+    // Ett verk trenger ingen blafunksjon. Fjernes helt, ikke skjules med
+    // hidden. Erfaring fra 13. august 2026: hidden taper mot en
+    // display-regel, og elementet blir stående.
+    if (utlosere.length < 2) nav.remove();
+
+    let naa = 0;
+
+    function vis(indeks: number) {
+      naa = (indeks + utlosere.length) % utlosere.length;
+      const u = utlosere[naa];
+
+      // src settes sist, etter srcset og sizes, så nettleseren ikke
+      // rekker å begynne å laste feil bredde.
+      bilde.removeAttribute("src");
+      bilde.srcset = u.dataset.sett ?? "";
+      bilde.sizes = "(min-width: 60rem) 80vw, 94vw";
+      bilde.src = u.href;
+      bilde.alt = u.dataset.alt ?? "";
+
+      tittel.textContent = u.dataset.tittel ?? "";
+      meta.textContent = u.dataset.meta ?? "";
+      teller.textContent = `${naa + 1} av ${utlosere.length}`;
+    }
+
+    for (const [i, u] of utlosere.entries()) {
+      u.addEventListener("click", (e) => {
+        // Cmd-klikk, Ctrl-klikk og midtklikk skal fortsatt åpne bildet
+        // i ny fane. Da lar vi lenka være en lenke.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || (e as MouseEvent).button !== 0) return;
+        e.preventDefault();
+        vis(i);
+        dialog.showModal();
+      });
+    }
+
+    for (const knapp of blaKnapper) {
+      knapp.addEventListener("click", () => {
+        vis(naa + Number(knapp.dataset.retning));
+      });
+    }
+
+    dialog.querySelector(".lyskasse__lukk")!.addEventListener("click", () => dialog.close());
+
+    // Klikk utenfor bildet lukker.
+    //
+    // Første forsøk var `if (e.target === dialog)`, altså treff rett på
+    // dialogen. Det virket ikke: rammedivven dekker hele dialogen, så
+    // klikket lander alltid på den. Fanget av nettlesertesten
+    // 13. august 2026.
+    //
+    // Nå gjelder motsatt regel. Alt lukker, unntatt selve bildet,
+    // bildeteksten og knappene.
+    dialog.addEventListener("click", (e) => {
+      const traff = e.target as HTMLElement;
+      if (
+        traff.closest("button") ||
+        traff.closest(".lyskasse__bilde") ||
+        traff.closest(".lyskasse__tekst")
+      ) {
+        return;
+      }
+      dialog.close();
+    });
+
+    dialog.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        vis(naa - 1);
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        vis(naa + 1);
+      }
+    });
+
+    // Sveip på berøringsskjerm. På mobil er piltaster ikke et alternativ,
+    // og knappene nederst krever presisjon.
+    let sveipX = 0;
+    let sveipY = 0;
+    dialog.addEventListener(
+      "touchstart",
+      (e) => {
+        sveipX = e.changedTouches[0].screenX;
+        sveipY = e.changedTouches[0].screenY;
+      },
+      { passive: true }
+    );
+    dialog.addEventListener(
+      "touchend",
+      (e) => {
+        const dx = e.changedTouches[0].screenX - sveipX;
+        const dy = e.changedTouches[0].screenY - sveipY;
+        // Krever et tydelig vannrett dra. Ellers ville et forsøk på å
+        // rulle eller knipe bladd til neste verk.
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          vis(naa + (dx < 0 ? 1 : -1));
+        }
+      },
+      { passive: true }
+    );
+
+    // Fokus tilbake til verket man kom fra. Uten dette havner fokus på
+    // toppen av sida, og den som bruker tastatur mister plassen sin.
+    dialog.addEventListener("close", () => {
+      utlosere[naa]?.focus();
+    });
+  }
+</script>
+
+<style is:global>
+  /* Bakgrunnen skal ikke rulle bak en åpen lyskasse. */
+  html:has(dialog.lyskasse[open]) {
+    overflow: hidden;
+  }
+</style>
+
+<style>
+  .lyskasse {
+    border: 0;
+    padding: 0;
+    background: none;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+  }
+
+  .lyskasse::backdrop {
+    background: rgb(28 27 25 / 0.92);
+  }
+
+  .lyskasse__ramme {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+    color: var(--papir);
+  }
+
+  /* Knappene her står på mørk bakgrunn, så .knapp passer ikke. */
+  .lyskasse button {
+    font-family: var(--sans);
+    font-size: 0.875rem;
+    background: none;
+    border: 1px solid rgb(250 249 246 / 0.4);
+    color: var(--papir);
+    padding: 0.5rem 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .lyskasse button:hover {
+    border-color: var(--papir);
+    background: rgb(250 249 246 / 0.1);
+  }
+
+  .lyskasse button:focus-visible {
+    outline: 2px solid var(--papir);
+    outline-offset: 2px;
+  }
+
+  .lyskasse__lukk {
+    justify-self: end;
+  }
+
+  .lyskasse__figur {
+    margin: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 0.9rem;
+    justify-items: center;
+  }
+
+  /* min-height: 0 over og object-fit her er det som holder et ekstremt
+     høyt bilde innenfor skjermen istedenfor å sprenge rutenettet. */
+  .lyskasse__bilde {
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .lyskasse__tekst {
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 0.9375rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .lyskasse__meta {
+    color: rgb(250 249 246 / 0.65);
+  }
+
+  .lyskasse__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .lyskasse__teller {
+    color: rgb(250 249 246 / 0.65);
+    font-family: var(--sans);
+    font-size: 0.875rem;
+    min-width: 5rem;
+    text-align: center;
+  }
+</style>

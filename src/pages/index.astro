@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Bilde from "../components/Bilde.astro";
 import VerkKort from "../components/VerkKort.astro";
+import Lyskasse from "../components/Lyskasse.astro";
 import Tekst from "../components/Tekst.astro";
 import { sideMedNokkel, framhevedeVerk, alleKunstnere } from "../lib/sanity";
 
@@ -107,6 +108,8 @@ const bein = [
       </section>
     )
   }
+
+  <Lyskasse />
 </Base>
 
 <style>

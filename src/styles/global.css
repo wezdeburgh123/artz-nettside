@@ -212,6 +212,13 @@ p {
   text-align: center;
 }
 
+/* hidden skal faktisk skjule. Standardregelen er display: none med lav
+   spesifisitet, så en vanlig display-regel på elementet slår den. Det
+   skjedde 13. august 2026 med filtrene på /galleri. */
+[hidden] {
+  display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

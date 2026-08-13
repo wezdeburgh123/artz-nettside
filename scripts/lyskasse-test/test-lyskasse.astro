@@ -1,0 +1,51 @@
+---
+// MIDLERTIDIG TESTSIDE. Skal ikke til produksjon.
+//
+// Formål: prøve lyskassa i en faktisk nettleser uten at Sanity er
+// tilgjengelig. Bildene er lokale filer med kjente ytterformater, så
+// bildeflaten kan testes mot et ekstremt høyt og et ekstremt bredt bilde.
+//
+// Arkiveres i _arkiv/ når testen er gjennomført.
+import Base from "../layouts/Base.astro";
+import VerkKort from "../components/VerkKort.astro";
+import Lyskasse from "../components/Lyskasse.astro";
+
+const verk = [
+  {
+    bilde: "/test-lyskasse/hoyt.jpg",
+    tittel: "Høyt bilde",
+    teknikk: "litografi",
+    aar: 2020,
+    maal: "40 × 70 cm",
+    kunstner: { navn: "Testkunstner A", slug: "test-a" },
+  },
+  {
+    bilde: "/test-lyskasse/bredt.jpg",
+    tittel: "Bredt bilde",
+    teknikk: "maleri",
+    aar: 2021,
+    maal: "180 × 70 cm",
+    status: "solgt",
+    kunstner: { navn: "Testkunstner B", slug: "test-b" },
+  },
+  {
+    bilde: "/test-lyskasse/kvadrat.jpg",
+    tittel: "Kvadratisk bilde",
+    aar: 2022,
+    kunstner: { navn: "Testkunstner C", slug: "test-c" },
+  },
+];
+---
+
+<Base tittel="Test av lyskasse">
+  <section class="seksjon innhold">
+    <h1>Test av lyskasse</h1>
+    <ul class="rutenett">
+      {verk.map((v: any) => (
+        <li><VerkKort verk={v} /></li>
+      ))}
+    </ul>
+  </section>
+
+  <Lyskasse />
+</Base>

@@ -55,6 +55,11 @@ const sendt = Astro.url.searchParams.get("sendt") === "1";
               </p>
 
               <button class="knapp" type="submit">Send melding</button>
+
+              <p class="personvern">
+                Vi bruker opplysningene bare til å svare deg, og deler dem ikke
+                med andre.
+              </p>
             </form>
           )
         }
@@ -125,6 +130,15 @@ const sendt = Astro.url.searchParams.get("sendt") === "1";
   .skjult {
     position: absolute;
     left: -9999px;
+  }
+
+  /* Kort personvernsetning. Den fulle GDPR-teksten hører til bolk 5. */
+  .personvern {
+    font-family: var(--sans);
+    font-size: 0.8125rem;
+    color: var(--tusj-dempet);
+    max-width: 30rem;
+    margin: 1rem 0 0;
   }
 
   .bekreftelse {

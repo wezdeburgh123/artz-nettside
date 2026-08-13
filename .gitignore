@@ -9,3 +9,5 @@ backup/
 
 # Lokalt arkiv over erstattede filer. Git tar over historikken herfra.
 _arkiv/
+
+public/plassholdere/

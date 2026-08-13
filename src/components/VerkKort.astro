@@ -1,6 +1,7 @@
 ---
 import Bilde from "./Bilde.astro";
 import { TEKNIKK_NAVN } from "../lib/sanity";
+import { bildeUrl, bildeSett } from "../lib/bilde";
 
 interface Props {
   verk: any;
@@ -13,10 +14,45 @@ const detaljer = [
   verk.aar,
   verk.maal,
 ].filter(Boolean);
+
+// Lyskassa trenger en stor adresse per verk. href er samtidig reserven
+// for de uten JavaScript: da åpnes bildefila direkte.
+const storUrl = bildeUrl(verk.bilde, 1600);
+const storSett = bildeSett(verk.bilde);
+
+// Bildetekst i stor visning. Kunstnernavnet tas med her selv om kortet
+// skjuler det, fordi lyskassa dekker hele skjermen og da er konteksten
+// borte.
+const lyskasseMeta = [
+  verk.kunstner?.navn,
+  ...detaljer,
+  verk.status === "solgt" ? "Solgt" : null,
+]
+  .filter(Boolean)
+  .join(" · ");
 ---
 
 <article class="kort">
-  <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
+  {
+    storUrl ? (
+      <a
+        class="kort__bilde"
+        href={storUrl}
+        data-lyskasse
+        data-sett={storSett}
+        data-tittel={verk.tittel}
+        data-meta={lyskasseMeta}
+        data-alt={verk.bilde?.alt || verk.tittel}
+        aria-label={`Se «${verk.tittel}» i stor visning`}
+      >
+        <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
+        <span class="kort__hint" aria-hidden="true">Se større</span>
+      </a>
+    ) : (
+      <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
+    )
+  }
+
   <div class="kort__tekst">
     <h3>{verk.tittel}</h3>
     {visKunstner && verk.kunstner && (
@@ -30,6 +66,49 @@ const detaljer = [
 </article>
 
 <style>
+  .kort__bilde {
+    display: block;
+    position: relative;
+    border: 0;
+    cursor: zoom-in;
+  }
+
+  .kort__bilde:focus-visible {
+    outline: 2px solid var(--aksent);
+    outline-offset: 3px;
+  }
+
+  /* Diskret hint. Vises bare når musa er over eller kortet har fokus, og
+     ligger i hjørnet av bildeflaten så det ikke konkurrerer med verket. */
+  .kort__hint {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--papir);
+    color: var(--tusj-dempet);
+    padding: 0.3rem 0.6rem;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+  }
+
+  .kort__bilde:hover .kort__hint,
+  .kort__bilde:focus-visible .kort__hint {
+    opacity: 1;
+  }
+
+  /* På berøringsskjerm finnes ingen hover, og da blir hintet stående
+     usynlig for alle. Vis det svakt hele tiden i stedet. */
+  @media (hover: none) {
+    .kort__hint {
+      opacity: 0.75;
+    }
+  }
+
   .kort__tekst {
     padding-top: 0.9rem;
   }

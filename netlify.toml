@@ -11,10 +11,18 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-[[headers]]
-  for = "/_astro/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# Ingen egen cache-regel på /_astro/*.
+#
+# Jeg satte først "max-age=31536000, immutable" her. Det slo tilbake
+# 13. august 2026: Sanity Studio krasjet med «Cannot read properties of null
+# (reading 'useMemoCache')» fordi nettleseren blandet filer fra to deployer.
+# Stacktracen viste Studio-chunker fra én deploy og React-chunken fra en
+# annen. Cmd+Shift+R løste det, som bekreftet cachen som årsak.
+#
+# Studio er en enkeltsideapp som laster chunker underveis. Ligger inngangs-
+# chunken i cache et helt år, ber den om barnechunker fra et gammelt bygg,
+# mens resten av siden kommer fra det nye. Netlify håndterer innholdshashede
+# Astro-filer selv, med invalidering per deploy. Min regel overstyrte det.
 
 # Studio skal ikke indekseres.
 [[headers]]
