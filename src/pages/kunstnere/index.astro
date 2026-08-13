@@ -4,6 +4,20 @@ import Bilde from "../../components/Bilde.astro";
 import { alleKunstnere } from "../../lib/sanity";
 
 const kunstnere = await alleKunstnere();
+
+// Vises bare når minst ett kort låner en generativ plassholder. Forsvinner
+// av seg selv når ekte verk er lagt inn på alle kunstnerne.
+const viserPlassholdere = kunstnere.some(
+  (k: any) => k.kortbildekilde === "plassholder"
+);
+
+function altTekst(k: any): string {
+  if (k.kortbildekilde === "portrett") return k.portrett?.alt || k.navn;
+  if (k.kortbildekilde === "verk") return `Verk av ${k.navn}`;
+  if (k.kortbildekilde === "plassholder")
+    return `Generativ plassholder for ${k.navn}. Ikke et verk av kunstneren.`;
+  return "";
+}
 ---
 
 <Base
@@ -17,12 +31,21 @@ const kunstnere = await alleKunstnere();
     </p>
 
     {
+      viserPlassholdere && (
+        <p class="forbehold">
+          Der vi ennå ikke har verk fra kunstneren, viser kortet en generativ
+          plassholder laget for ARTZ. Den er ikke et verk av kunstneren.
+        </p>
+      )
+    }
+
+    {
       kunstnere.length > 0 ? (
         <ul class="rutenett kunstnerliste">
           {kunstnere.map((k: any) => (
             <li>
               <a class="kunstner" href={`/kunstnere/${k.slug}`}>
-                <Bilde kilde={k.portrett} alt={k.portrett?.alt || k.navn} bredde={600} />
+                <Bilde kilde={k.kortbilde} alt={altTekst(k)} bredde={600} />
                 <h2>{k.navn}</h2>
                 {k.levetid && <p class="meta">{k.levetid}</p>}
               </a>
@@ -43,6 +66,13 @@ const kunstnere = await alleKunstnere();
 <style>
   .kunstnerliste {
     margin-top: clamp(2rem, 5vw, 3rem);
+  }
+
+  .forbehold {
+    margin-top: 1.25rem;
+    max-width: 46ch;
+    font-size: 0.9375rem;
+    color: var(--tusj-dempet);
   }
 
   .kunstner {

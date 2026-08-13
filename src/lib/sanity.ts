@@ -57,12 +57,51 @@ const VERK_FELT = `
   "kunstner": kunstner->{navn, "slug": slug.current}
 `;
 
-export const alleKunstnere = () =>
-  hent<any[]>(
-    defineQuery(`*[_type == "kunstner"] | order(navn asc){${KUNSTNER_FELT}}`),
+// Registerdrift-plassholderne har dokument-ID på formen
+// verk-registerdrift-<slug>-<nr>. Se claude/artz-plassholderbilder.md.
+// Vurderingen gjores i JavaScript og ikke i GROQ, slik at en feil her gir
+// feil bilde og ikke en tom kunstnerliste.
+const erPlassholder = (id: unknown) =>
+  typeof id === "string" && id.startsWith("verk-registerdrift-");
+
+export type Kortbildekilde = "portrett" | "verk" | "plassholder" | "ingen";
+
+// Kunstnerkortet viser portrett nar det finnes. Mangler portrett, laner vi et
+// verk. Ekte verk foretrekkes, generativ plassholder brukes bare nar
+// kunstneren ikke har noe annet. Kilden folger med ut, slik at siden kan si
+// aerlig hva den viser. Valgt 13. august 2026.
+export const alleKunstnere = async () => {
+  const rader = await hent<any[]>(
+    defineQuery(`*[_type == "kunstner"] | order(navn asc){
+      ${KUNSTNER_FELT},
+      "verksbilder": *[_type == "verk" && references(^._id) && defined(bilde.asset)]
+        | order(_createdAt desc)[0...6]{ _id, bilde }
+    }`),
     {},
     []
   );
+
+  return rader.map((k: any) => {
+    const verk: any[] = Array.isArray(k.verksbilder) ? k.verksbilder : [];
+    const ekte = verk.find((v) => !erPlassholder(v?._id));
+    const laant = ekte ?? verk[0] ?? null;
+    const harPortrett = Boolean(k?.portrett?.asset);
+
+    const kortbildekilde: Kortbildekilde = harPortrett
+      ? "portrett"
+      : laant
+        ? ekte
+          ? "verk"
+          : "plassholder"
+        : "ingen";
+
+    return {
+      ...k,
+      kortbilde: harPortrett ? k.portrett : (laant?.bilde ?? null),
+      kortbildekilde,
+    };
+  });
+};
 
 export const kunstnerMedSlug = (slug: string) =>
   hent<any | null>(
@@ -79,6 +118,48 @@ export const alleVerk = () =>
     defineQuery(`*[_type == "verk"] | order(_createdAt desc){${VERK_FELT}}`),
     {},
     []
+  );
+
+// ---------------------------------------------------------------------------
+// Adressen til ett verk.
+//
+// Verk har ikke slug-felt, og skal ikke få det: hvert felt André må fylle ut
+// er et felt han kan glemme eller fylle feil. Adressen bygges derfor av
+// tittelen, som er obligatorisk, pluss dokument-ID-en som holder den unik.
+// To verk som heter «Uten tittel» kolliderer dermed ikke.
+//
+// Bare ID-en slår opp. Titteldelen er kosmetikk, og feil tittel i adressen
+// sender besøkende videre til den riktige med 301.
+//
+// Gjenopprettet 13. august 2026. De tre funksjonene ble borte da to økter
+// skrev på denne fila samtidig, og bygget knakk på en manglende eksport.
+// ---------------------------------------------------------------------------
+
+export function verkSlug(tittel: string | undefined): string {
+  const s = (tittel ?? "")
+    .toLowerCase()
+    .replace(/æ/g, "ae")
+    .replace(/ø/g, "oe")
+    .replace(/å/g, "aa")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return s || "verk";
+}
+
+export const verkUrl = (verk: any) =>
+  `/verk/${verkSlug(verk?.tittel)}/${encodeURIComponent(verk?._id ?? "")}`;
+
+export const verkMedId = (id: string) =>
+  hent<any | null>(
+    defineQuery(`*[_type == "verk" && _id == $id][0]{
+      ${VERK_FELT},
+      "andreVerk": *[_type == "verk" && kunstner._ref == ^.kunstner._ref && _id != ^._id]
+        | order(_createdAt desc)[0...4]{${VERK_FELT}}
+    }`),
+    { id },
+    null
   );
 
 // Er ingen verk merket «vis på forsiden», tar vi de seks nyeste framfor

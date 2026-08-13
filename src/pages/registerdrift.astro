@@ -1,0 +1,254 @@
+---
+// Registerdrift: generativ grafikk som simulerer verkstedet.
+// Algoritmen ligger i /registerdrift/algoritme.js og deles med
+// scripts/registerdrift-viewer.html og scripts/render.mjs, slik at det
+// finnes én implementasjon. p5 serveres lokalt, ikke fra CDN.
+import Base from "../layouts/Base.astro";
+---
+
+<Base
+  tittel="Registerdrift"
+  beskrivelse="Et generativt trykkverksted. Transparente plater lagt ned med feilslått register, platemerke og papirfiber. Lag ditt eget trykk."
+>
+  <section class="innhold rd">
+    <header class="rd__topp">
+      <p class="stikkord">Fra verkstedet</p>
+      <h1>Registerdrift</h1>
+      <p class="rd__ingress">
+        Grafikeren jobber i lag. Én plate per farge, hver med sitt eget trykk.
+        Registeret skal holde lagene i flukt, og er også det første som svikter.
+        En tiendedels millimeter, et papir som har trukket fuktighet, og den blå
+        konturen ligger et hår ved siden av den svarte. Her er avviket motivet.
+        Trykk på knappene og lag ditt eget.
+      </p>
+    </header>
+
+    <div class="rd__rigg">
+      <div class="rd__ark">
+        <div id="lerret" aria-label="Generert trykk"></div>
+        <p class="rd__fasit meta" id="fasit"></p>
+      </div>
+
+      <form class="rd__panel" onsubmit="return false">
+        <fieldset>
+          <legend>Plate</legend>
+          <label>Hånd <select id="hand"></select></label>
+          <label>Palett <select id="palett"></select></label>
+          <label>Form <select id="konvolutt"></select></label>
+          <label>Format <select id="format"></select></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Trykket</legend>
+          <label>Antall plater <output id="plater-ut"></output>
+            <input type="range" id="plater" min="1" max="7" step="1" value="4" />
+          </label>
+          <label>Registerdrift <output id="drift-ut"></output>
+            <input type="range" id="drift" min="0" max="60" step="1" value="10" />
+          </label>
+          <label>Blekktetthet <output id="tetthet-ut"></output>
+            <input type="range" id="tetthet" min="0.2" max="2" step="0.05" value="1" />
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Opplag</legend>
+          <label class="rd__fro">Frø <input type="number" id="fro" min="1" value="12345" /></label>
+          <div class="rd__knapper">
+            <button type="button" class="knapp" id="nytt">Nytt trykk</button>
+            <button type="button" class="knapp knapp--stille" id="forrige">Forrige</button>
+            <button type="button" class="knapp knapp--stille" id="neste">Neste</button>
+          </div>
+          <button type="button" class="knapp knapp--stille rd__bred" id="last">Last ned PNG</button>
+        </fieldset>
+      </form>
+    </div>
+
+    <p class="rd__note meta">
+      Hvert trykk bygges av tre til seks selvstendige plater som multipliseres
+      inn i hverandre. Der to farger møtes oppstår en tredje som ikke finnes i
+      paletten, akkurat som når transparent blekk legges over blekk. Samme frø
+      gir alltid samme trykk.
+    </p>
+  </section>
+
+  <script is:inline src="/registerdrift/p5.min.js"></script>
+  <script is:inline src="/registerdrift/algoritme.js"></script>
+  <script is:inline>
+    (function () {
+      const R = window.REGISTERDRIFT;
+      const el = (id) => document.getElementById(id);
+      let skisse = null;
+
+      const params = {
+        seed: 1000 + Math.floor(Math.random() * 900000),
+        hand: R.HENDER[Math.floor(Math.random() * R.HENDER.length)],
+        palett: R.PALETTER[Math.floor(Math.random() * R.PALETTER.length)],
+        konvolutt: R.KONVOLUTTER[Math.floor(Math.random() * R.KONVOLUTTER.length)],
+        format: R.FORMATER[Math.floor(Math.random() * R.FORMATER.length)],
+        plater: 4,
+        drift: 10,
+        tetthet: 1,
+      };
+
+      // Skjermflaten skal ikke koste mer enn den må. Full oppløsning
+      // hører til nedlastingen, ikke til visningen.
+      function maal() {
+        const tak = window.innerWidth < 700 ? 820 : 1180;
+        const f = Math.min(1, tak / Math.max(params.format.w, params.format.h));
+        return { w: Math.round(params.format.w * f), h: Math.round(params.format.h * f) };
+      }
+
+      function fyllValg(id, liste, tekst, erValgt) {
+        const s = el(id);
+        s.innerHTML = liste
+          .map((v, i) => `<option value="${i}"${erValgt(v) ? " selected" : ""}>${tekst(v)}</option>`)
+          .join("");
+      }
+
+      function byggValg() {
+        fyllValg("hand", R.HENDER, (v) => v, (v) => v === params.hand);
+        fyllValg("palett", R.PALETTER, (v) => v.navn, (v) => v.navn === params.palett.navn);
+        fyllValg("konvolutt", R.KONVOLUTTER, (v) => v, (v) => v === params.konvolutt);
+        fyllValg("format", R.FORMATER, (v) => `${v.w} × ${v.h}`, (v) => v.w === params.format.w && v.h === params.format.h);
+      }
+
+      function visFasit() {
+        el("fasit").textContent =
+          `${params.hand} · ${params.palett.navn} · ${params.konvolutt} · ${params.plater} plater · frø ${params.seed}`;
+        el("plater-ut").value = params.plater;
+        el("drift-ut").value = params.drift + " px";
+        el("tetthet-ut").value = Number(params.tetthet).toFixed(2);
+        el("fro").value = params.seed;
+      }
+
+      function tegn() {
+        const m = maal();
+        if (skisse) {
+          if (skisse.width !== m.w || skisse.height !== m.h) skisse.resizeCanvas(m.w, m.h);
+          R.tegnVerk(skisse, params);
+        }
+        visFasit();
+      }
+
+      new p5((p) => {
+        p.setup = () => {
+          const m = maal();
+          p.createCanvas(m.w, m.h).parent("lerret");
+          p.pixelDensity(1);
+          p.noLoop();
+          skisse = p;
+          byggValg();
+          tegn();
+        };
+      });
+
+      el("hand").onchange = (e) => { params.hand = R.HENDER[+e.target.value]; tegn(); };
+      el("palett").onchange = (e) => { params.palett = R.PALETTER[+e.target.value]; tegn(); };
+      el("konvolutt").onchange = (e) => { params.konvolutt = R.KONVOLUTTER[+e.target.value]; tegn(); };
+      el("format").onchange = (e) => { params.format = R.FORMATER[+e.target.value]; tegn(); };
+      el("plater").oninput = (e) => { params.plater = +e.target.value; tegn(); };
+      el("drift").oninput = (e) => { params.drift = +e.target.value; tegn(); };
+      el("tetthet").oninput = (e) => { params.tetthet = +e.target.value; tegn(); };
+      el("fro").onchange = (e) => { const n = parseInt(e.target.value, 10); if (n > 0) { params.seed = n; tegn(); } };
+      el("nytt").onclick = () => { params.seed = 1000 + Math.floor(Math.random() * 900000); tegn(); };
+      el("forrige").onclick = () => { params.seed = Math.max(1, params.seed - 1); tegn(); };
+      el("neste").onclick = () => { params.seed += 1; tegn(); };
+
+      el("last").onclick = () => {
+        // Nedlastingen tegnes på nytt i full oppløsning, uavhengig av skjermen.
+        el("last").disabled = true;
+        el("last").textContent = "Trykker…";
+        new p5((p) => {
+          p.setup = () => {
+            p.createCanvas(params.format.w, params.format.h);
+            p.canvas.style.display = "none";
+            p.pixelDensity(1);
+            p.noLoop();
+            R.tegnVerk(p, params);
+            p.saveCanvas(`registerdrift-${params.hand}-${params.seed}`, "png");
+            setTimeout(() => {
+              p.remove();
+              el("last").disabled = false;
+              el("last").textContent = "Last ned PNG";
+            }, 400);
+          };
+        });
+      };
+
+      let tid;
+      window.addEventListener("resize", () => { clearTimeout(tid); tid = setTimeout(tegn, 300); });
+    })();
+  </script>
+
+  <style>
+    .rd { padding-block: clamp(2rem, 5vw, 3.5rem); }
+    .rd__topp { max-width: 46rem; margin-bottom: clamp(1.75rem, 4vw, 2.75rem); }
+    .rd__topp h1 { margin: 0.2em 0 0.4em; }
+    .rd__ingress { color: var(--tusj-dempet); margin: 0; }
+
+    .rd__rigg {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 17rem;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      align-items: start;
+    }
+
+    .rd__ark { min-width: 0; }
+    .rd__ark :global(canvas) {
+      width: 100% !important;
+      height: auto !important;
+      display: block;
+      border: 1px solid var(--strek);
+      background: var(--papir-dyp);
+    }
+    .rd__fasit { margin: 0.7rem 0 0; font-variant-numeric: tabular-nums; }
+
+    .rd__panel { font-family: var(--sans); font-size: 0.9375rem; }
+    .rd__panel fieldset {
+      border: 0;
+      border-top: 1px solid var(--strek);
+      padding: 1rem 0 0.35rem;
+      margin: 0 0 1.35rem;
+    }
+    .rd__panel legend {
+      font-size: 0.8125rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--tusj-dempet);
+      padding: 0;
+    }
+    .rd__panel label {
+      display: block;
+      margin-bottom: 0.9rem;
+      color: var(--tusj-dempet);
+    }
+    .rd__panel select,
+    .rd__panel input[type="number"] {
+      display: block;
+      width: 100%;
+      margin-top: 0.3rem;
+      padding: 0.5rem 0.55rem;
+      font: inherit;
+      color: var(--tusj);
+      background: var(--papir);
+      border: 1px solid var(--strek);
+      border-radius: 2px;
+    }
+    .rd__panel input[type="range"] { width: 100%; margin-top: 0.35rem; accent-color: var(--aksent); }
+    .rd__panel output { float: right; color: var(--tusj); font-variant-numeric: tabular-nums; }
+    .rd__knapper { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .rd__knapper .knapp { flex: 1; text-align: center; padding-inline: 0.4rem; }
+    .rd__bred { width: 100%; text-align: center; }
+    .knapp--stille { background: transparent; color: var(--tusj); border: 1px solid var(--strek); }
+    .knapp--stille:hover { border-color: var(--tusj); }
+    .rd__panel button { font: inherit; cursor: pointer; }
+    .rd__panel button[disabled] { opacity: 0.5; cursor: default; }
+
+    .rd__note { max-width: 40rem; margin-top: clamp(1.75rem, 4vw, 2.5rem); }
+
+    @media (max-width: 860px) {
+      .rd__rigg { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+</Base>

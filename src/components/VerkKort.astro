@@ -1,6 +1,6 @@
 ---
 import Bilde from "./Bilde.astro";
-import { TEKNIKK_NAVN } from "../lib/sanity";
+import { TEKNIKK_NAVN, verkUrl } from "../lib/sanity";
 import { bildeUrl, bildeSett } from "../lib/bilde";
 
 interface Props {
@@ -54,7 +54,9 @@ const lyskasseMeta = [
   }
 
   <div class="kort__tekst">
-    <h3>{verk.tittel}</h3>
+    {/* Arbeidsdeling: bildet åpner lyskassa for et raskt blikk, tittelen
+        går til verkets egen side. Den siste er det man kan sende til noen. */}
+    <h3><a class="kort__tittel" href={verkUrl(verk)}>{verk.tittel}</a></h3>
     {visKunstner && verk.kunstner && (
       <p class="kort__kunstner">
         <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
@@ -66,6 +68,14 @@ const lyskasseMeta = [
 </article>
 
 <style>
+  .kort__tittel {
+    border-bottom-color: transparent;
+  }
+
+  .kort__tittel:hover {
+    border-bottom-color: var(--tusj);
+  }
+
   .kort__bilde {
     display: block;
     position: relative;

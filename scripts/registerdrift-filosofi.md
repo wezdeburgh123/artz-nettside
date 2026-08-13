@@ -1,0 +1,21 @@
+# Registerdrift
+
+En algoritmisk retning for ARTZ. Skrevet 14. august 2026.
+
+## Filosofi
+
+Registerdrift handler om det som skjer i det øyeblikket en trykkplate legges ned på papiret nesten, men ikke helt, der den forrige lå. Grafikeren jobber i lag. Én plate per farge, hver med sitt eget bad, sin egen valse, sitt eget trykk. Registeret er systemet som skal holde lagene i flukt. Det er også det første som svikter. En tiendedels millimeter forskyvning, et papir som har trukket fuktighet, en plate som er varmet av håndflaten, og plutselig er den blå konturen et hår ved siden av den svarte. Det er der grafikken slutter å være reproduksjon og begynner å være verk. Denne retningen behandler avviket som motivet, ikke som feilen.
+
+Algoritmisk betyr det at ingenting tegnes én gang. Hvert verk bygges av tre til seks selvstendige plater, hver generert i sitt eget lag, hver med sin egen blekkfarge, og hver lagt ned med en drift som er liten nok til å virke utilsiktet og stor nok til å bli sett. Platene multipliseres inn i hverandre. Der to farger møtes oppstår en tredje som ikke finnes i palettet, akkurat som når transparent litografisk blekk legges over blekk. Der tre møtes blir det nesten svart. Overlappet er ikke en effekt lagt på til slutt, det er hele fargeteorien i systemet, og den må være nøye kalibrert. En algoritme som gjetter på alfaverdier gir gjørme. En algoritme utviklet av noen som har stått ved pressa gir dybde.
+
+Hver plate lages av én markørlogikk, det jeg kaller en hånd. En hånd er ikke en stil man velger fra en meny, det er en fysisk vane oversatt til kode. Flythånden trekker lange strøk gjennom et vektorfelt av lagdelt Perlin-støy, som en pensel som følger en usynlig strøm og letner der farten øker. Feltehånden skjærer harde flater med revne kanter, høyt kontrast, plakatens logikk. Rissehånden bygger rekursive grenverk med avtagende linjetykkelse, tørrnålens skarpe presisjon. Kornhånden aggregerer titusenvis av punkter til myke masser som fortettes mot tyngdepunktet, mezzotintens fløyel. Bølgehånden legger interferenskonturer der to frekvenser møtes og lager moiré som ikke var planlagt av noen. Hver hånd er finpusset gjennom utallige gjennomkjøringer, og forskjellen mellom en hånd som virker og en som ser generert ut ligger i detaljer ingen ser før de er borte.
+
+Komposisjonen er ikke tapet. Hvert verk får en form-konvolutt, et område der blekket har rett til å ligge: en horisontlinje som deler flaten i to ulike vekter, en sentral masse som puster mot margene, en diagonal som drar øyet på tvers. Konvolutten er den samme for alle platene i ett verk, og det er nettopp derfor driften blir lesbar. Uten en delt form å avvike fra er avvik bare rot. Dette er den delen av algoritmen som krever mest omtanke og som tåler minst slurv, for det er her forskjellen mellom et verk og en teksturprøve avgjøres.
+
+Papiret er en aktør, ikke en bakgrunn. Det er varmt, aldri hvitt, med en fibermottling generert av lavfrekvent støy og et korn som ligger over alt blekket, ikke under. Innenfor margen står platemerket, den svakt pregede rektangelkanten intaglioplata etterlater når den presses ned i det fuktede arket. Platemerket er detaljen som gjør at øyet leser bildet som noe trykt framfor noe rastrert på en skjerm, og den skal være så vidt synlig at man ikke registrerer at man registrerte den.
+
+Til sist: opplaget. Samme frø gir samme verk, hver gang, uten unntak. Endres frøet med én, endres alt som ikke er hånden og paletten. To verk med samme hånd og samme palett men ulike frø leser som to trykk av samme kunstner, ikke som to filer fra samme generator. Det er hele prøven på om systemet er godt nok bygget. En kunstnerhånd er en fast del av systemet, og innenfor den er variasjonen fri.
+
+## Det innebygde motivet
+
+ARTZ har et komplett grafisk verksted og et rammeverksted. Verkstedet er selve grunnen til at dette nettstedet finnes, og det er det som ikke har noen tekst i arkivet. Registerdrift er derfor bygget som en simulering av det som skjer i den bygningen: transparente lag, feilslått register, platemerke, papirfiber, opplagsvariasjon. Ingen som ser bildene vil tenke på det. Noen som har stått i et grafikkverksted vil kjenne det igjen med én gang.
