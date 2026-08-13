@@ -1,0 +1,62 @@
+---
+import Bilde from "./Bilde.astro";
+import { TEKNIKK_NAVN } from "../lib/sanity";
+
+interface Props {
+  verk: any;
+  visKunstner?: boolean;
+}
+
+const { verk, visKunstner = true } = Astro.props;
+const detaljer = [
+  verk.teknikk ? TEKNIKK_NAVN[verk.teknikk] ?? verk.teknikk : null,
+  verk.aar,
+  verk.maal,
+].filter(Boolean);
+---
+
+<article class="kort">
+  <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
+  <div class="kort__tekst">
+    <h3>{verk.tittel}</h3>
+    {visKunstner && verk.kunstner && (
+      <p class="kort__kunstner">
+        <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
+      </p>
+    )}
+    <p class="meta">{detaljer.join(" · ")}</p>
+    {verk.status === "solgt" && <p class="merkelapp">Solgt</p>}
+  </div>
+</article>
+
+<style>
+  .kort__tekst {
+    padding-top: 0.9rem;
+  }
+
+  .kort h3 {
+    font-size: 1.0625rem;
+    margin-bottom: 0.15em;
+  }
+
+  .kort__kunstner {
+    margin: 0 0 0.3em;
+    font-size: 0.9375rem;
+  }
+
+  .kort__kunstner a {
+    border-bottom-color: transparent;
+  }
+
+  .kort__kunstner a:hover {
+    border-bottom-color: var(--tusj);
+  }
+
+  .kort .meta {
+    margin: 0;
+  }
+
+  .kort .merkelapp {
+    margin-top: 0.6rem;
+  }
+</style>

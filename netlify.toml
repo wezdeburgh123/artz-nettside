@@ -1,0 +1,235 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Bildefiler og statiske ressurser kan caches lenge.
+[[headers]]
+  for = "/demo/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Studio skal ikke indekseres.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+# ------------------------------------------------------------------
+# Videresending fra gamle adresser. Kunstnersidene har eksistert siden
+# 2014, så det ligger søkeverdi i dem. Kilde: claude/artz-arkiv-sidekart.md
+# ------------------------------------------------------------------
+
+# Kunstnere, 2018-2023-epoken
+[[redirects]]
+  from = "/frank-brunner/*"
+  to = "/kunstnere/frank-brunner"
+  status = 301
+
+[[redirects]]
+  from = "/elling-reitan/*"
+  to = "/kunstnere/elling-reitan"
+  status = 301
+
+[[redirects]]
+  from = "/nico-widerberg/*"
+  to = "/kunstnere/nico-widerberg"
+  status = 301
+
+[[redirects]]
+  from = "/sverre-bjertnaes/*"
+  to = "/kunstnere/sverre-bjertnaes"
+  status = 301
+
+[[redirects]]
+  from = "/bjorg-thoraldsdottir/*"
+  to = "/kunstnere/bjorg-thoraldsdottir"
+  status = 301
+
+[[redirects]]
+  from = "/per-morten-karlsen/*"
+  to = "/kunstnere/per-morten-karlsen"
+  status = 301
+
+[[redirects]]
+  from = "/mia-gjerdrum-helgesen/*"
+  to = "/kunstnere/mia-gjerdrum-helgesen"
+  status = 301
+
+[[redirects]]
+  from = "/cathrine-knudsen/*"
+  to = "/kunstnere/cathrine-knudsen"
+  status = 301
+
+[[redirects]]
+  from = "/rolf-sorensen/*"
+  to = "/kunstnere/rolf-sorensen"
+  status = 301
+
+[[redirects]]
+  from = "/nina-due/*"
+  to = "/kunstnere/nina-due"
+  status = 301
+
+[[redirects]]
+  from = "/arjuna-geir-aasehaug/*"
+  to = "/kunstnere/arjuna-geir-aasehaug"
+  status = 301
+
+[[redirects]]
+  from = "/jorgen-holden/*"
+  to = "/kunstnere/jorgen-holen"
+  status = 301
+
+# Kunstnere, 2013-2016-epoken uten bindestreker
+[[redirects]]
+  from = "/ellingreitan"
+  to = "/kunstnere/elling-reitan"
+  status = 301
+
+[[redirects]]
+  from = "/nicowiderberg"
+  to = "/kunstnere/nico-widerberg"
+  status = 301
+
+[[redirects]]
+  from = "/bjorgthorallsdottir"
+  to = "/kunstnere/bjorg-thoraldsdottir"
+  status = 301
+
+[[redirects]]
+  from = "/permortenkarlsen"
+  to = "/kunstnere/per-morten-karlsen"
+  status = 301
+
+[[redirects]]
+  from = "/jorgenholen"
+  to = "/kunstnere/jorgen-holen"
+  status = 301
+
+[[redirects]]
+  from = "/ludvigeikaas"
+  to = "/kunstnere/ludvig-eikaas"
+  status = 301
+
+[[redirects]]
+  from = "/eva-langaas"
+  to = "/kunstnere/eva-langaas"
+  status = 301
+
+# Oversiktssider
+[[redirects]]
+  from = "/kunstnerprofiler"
+  to = "/kunstnere"
+  status = 301
+
+[[redirects]]
+  from = "/galleri-2/*"
+  to = "/galleri"
+  status = 301
+
+[[redirects]]
+  from = "/artz-gallery/*"
+  to = "/galleri"
+  status = 301
+
+[[redirects]]
+  from = "/artz-photo/*"
+  to = "/galleri"
+  status = 301
+
+[[redirects]]
+  from = "/hva-skjer/*"
+  to = "/aktuelt"
+  status = 301
+
+[[redirects]]
+  from = "/nyheter/*"
+  to = "/aktuelt"
+  status = 301
+
+[[redirects]]
+  from = "/category/aktuelt/*"
+  to = "/aktuelt"
+  status = 301
+
+[[redirects]]
+  from = "/category/uncategorized/*"
+  to = "/aktuelt"
+  status = 301
+
+[[redirects]]
+  from = "/author/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/kontaktskjema/*"
+  to = "/kontakt"
+  status = 301
+
+[[redirects]]
+  from = "/grafikksenteret"
+  to = "/grafikksenteret"
+  status = 301
+  force = false
+
+[[redirects]]
+  from = "/grafikksenteret-i-oslo/*"
+  to = "/grafikksenteret"
+  status = 301
+
+[[redirects]]
+  from = "/hjem"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/kunsthistore"
+  to = "/aktuelt"
+  status = 301
+
+# Kunsthistorie-artiklene fra 2018. Peker til Aktuelt inntil de eventuelt
+# legges inn på nytt som egne saker.
+[[redirects]]
+  from = "/2018/*"
+  to = "/aktuelt"
+  status = 301
+
+[[redirects]]
+  from = "/2021/*"
+  to = "/aktuelt"
+  status = 301
+
+# Rester fra WordPress
+[[redirects]]
+  from = "/sample-page/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/645-2/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/654-2/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/wp-admin/*"
+  to = "/admin"
+  status = 301
+
+[[redirects]]
+  from = "/wp-login.php"
+  to = "/admin"
+  status = 301

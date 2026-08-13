@@ -1,0 +1,145 @@
+---
+import Base from "../layouts/Base.astro";
+import Tekst from "../components/Tekst.astro";
+import { sideMedNokkel } from "../lib/sanity";
+
+const side: any = await sideMedNokkel("kontakt");
+const sendt = Astro.url.searchParams.get("sendt") === "1";
+---
+
+<Base tittel="Kontakt" beskrivelse="Ta kontakt med ARTZ på post@artz.no.">
+  <section class="seksjon innhold">
+    <h1>{side?.tittel || "Kontakt"}</h1>
+    {side?.ingress && <p class="ingress">{side.ingress}</p>}
+    {side?.tekst && <Tekst verdi={side.tekst} />}
+
+    <div class="kolonner">
+      <div>
+        {
+          sendt ? (
+            <p class="bekreftelse">
+              Takk. Meldingen er sendt, og vi svarer så snart vi kan.
+            </p>
+          ) : (
+            <form
+              name="kontakt"
+              method="POST"
+              data-netlify="true"
+              action="/kontakt?sendt=1"
+            >
+              <p class="skjult">
+                <label>
+                  Ikke fyll ut dette feltet
+                  <input name="bot-field" />
+                </label>
+              </p>
+
+              <p class="felt">
+                <label for="navn">Navn</label>
+                <input id="navn" name="navn" type="text" required autocomplete="name" />
+              </p>
+
+              <p class="felt">
+                <label for="epost">E-post</label>
+                <input id="epost" name="epost" type="email" required autocomplete="email" />
+              </p>
+
+              <p class="felt">
+                <label for="telefon">Telefon <span class="valgfritt">valgfritt</span></label>
+                <input id="telefon" name="telefon" type="tel" autocomplete="tel" />
+              </p>
+
+              <p class="felt">
+                <label for="melding">Melding</label>
+                <textarea id="melding" name="melding" rows="6" required></textarea>
+              </p>
+
+              <button class="knapp" type="submit">Send melding</button>
+            </form>
+          )
+        }
+      </div>
+
+      <aside class="kort">
+        <p class="stikkord">Direkte</p>
+        <p>
+          <a href="mailto:post@artz.no">post@artz.no</a>
+        </p>
+        <p class="meta">
+          Skal du ha noe rammet inn, ta gjerne med målene på verket i
+          henvendelsen.
+        </p>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .kolonner {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    margin-top: clamp(2rem, 5vw, 3rem);
+    padding-top: clamp(1.5rem, 4vw, 2rem);
+    border-top: 1px solid var(--strek);
+  }
+
+  @media (min-width: 52rem) {
+    .kolonner {
+      grid-template-columns: 1.4fr 1fr;
+    }
+  }
+
+  .felt {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 30rem;
+    margin-bottom: 1.25rem;
+  }
+
+  label {
+    font-family: var(--sans);
+    font-size: 0.9375rem;
+  }
+
+  .valgfritt {
+    color: var(--tusj-dempet);
+    font-size: 0.8125rem;
+  }
+
+  input,
+  textarea {
+    font: inherit;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--strek);
+    background: #fff;
+    border-radius: 0;
+    width: 100%;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--aksent);
+    outline-offset: 1px;
+  }
+
+  .skjult {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .bekreftelse {
+    font-size: 1.125rem;
+    border-left: 3px solid var(--aksent);
+    padding-left: 1rem;
+  }
+
+  .kort {
+    background: var(--papir-dyp);
+    padding: 1.5rem;
+    align-self: start;
+  }
+
+  .kort p:last-child {
+    margin-bottom: 0;
+  }
+</style>

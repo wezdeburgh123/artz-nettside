@@ -1,0 +1,220 @@
+/* ARTZ. Rolig galleriestetikk. Bildene skal dominere, ikke designet.
+   Designretningen justeres i bolk 3. Dette er et nøkternt utgangspunkt. */
+
+:root {
+  --papir: #faf9f6;
+  --papir-dyp: #f1efe9;
+  --tusj: #1c1b19;
+  --tusj-dempet: #6a6660;
+  --strek: #ddd9d1;
+  --aksent: #4a5c5a;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+
+  --bredde: 76rem;
+  --luft: clamp(1.25rem, 4vw, 3rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--papir);
+  color: var(--tusj);
+  font-family: var(--serif);
+  /* Litt større grunnskrift enn vanlig. Nettstedet skal være lett å lese. */
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--strek);
+  transition: border-color 0.15s ease;
+}
+
+a:hover {
+  border-color: var(--tusj);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--aksent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+p {
+  margin: 0 0 1.1em;
+  text-wrap: pretty;
+}
+
+/* Lesbar linjelengde der det faktisk er brødtekst. */
+.brodtekst p,
+.brodtekst li,
+.prosa p {
+  max-width: 38em;
+}
+
+.innhold {
+  width: 100%;
+  max-width: var(--bredde);
+  margin-inline: auto;
+  padding-inline: var(--luft);
+}
+
+.seksjon {
+  padding-block: clamp(2rem, 4.5vw, 3.25rem);
+}
+
+/* Skillelinje mellom seksjoner som følger hverandre. */
+.seksjon--delt {
+  border-top: 1px solid var(--strek);
+}
+
+.stikkord {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tusj-dempet);
+  margin: 0 0 1rem;
+}
+
+.meta {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  color: var(--tusj-dempet);
+  line-height: 1.5;
+}
+
+.ingress {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  line-height: 1.5;
+  max-width: 34em;
+  color: var(--tusj);
+}
+
+/* Rutenett for verk og kunstnere */
+.rutenett {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 3vw, 2rem);
+  /* To kolonner på mobil, flere på større skjermer. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Bildepolitikk: nøytral bakgrunn, fast høyde på flaten, verket sentrert.
+   Da kan ikke et skjevt mobilbilde i feil format ødelegge layouten. */
+.bildeflate {
+  background: var(--papir-dyp);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.bildeflate img {
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.bildeflate--bred {
+  aspect-ratio: 3 / 2;
+}
+
+.bildeflate--fri {
+  aspect-ratio: auto;
+  padding: 0;
+}
+
+.merkelapp {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--strek);
+  padding: 0.2rem 0.5rem;
+  display: inline-block;
+  color: var(--tusj-dempet);
+}
+
+.knapp {
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  display: inline-block;
+  border: 1px solid var(--tusj);
+  padding: 0.75rem 1.5rem;
+  background: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.knapp:hover {
+  background: var(--tusj);
+  color: var(--papir);
+}
+
+.varsel {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  margin: 0;
+  max-width: none;
+  background: #fff8e1;
+  border-bottom: 1px solid #e8dcae;
+  color: #5c4a12;
+  padding: 0.5rem var(--luft);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

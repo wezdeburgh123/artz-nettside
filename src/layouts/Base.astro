@@ -1,0 +1,161 @@
+---
+import "../styles/global.css";
+import { datasettStatus } from "../lib/sanity";
+
+interface Props {
+  tittel: string;
+  beskrivelse?: string;
+}
+
+const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted." } =
+  Astro.props;
+
+const meny = [
+  { navn: "Kunstnere", url: "/kunstnere" },
+  { navn: "Verk", url: "/galleri" },
+  { navn: "Utsmykking", url: "/utsmykking" },
+  { navn: "Rammeverkstedet", url: "/rammeverkstedet" },
+  { navn: "Grafikksenteret", url: "/grafikksenteret" },
+  { navn: "Aktuelt", url: "/aktuelt" },
+  { navn: "Kontakt", url: "/kontakt" },
+];
+
+const sti = Astro.url.pathname;
+
+const status = await datasettStatus();
+const varsel: Record<string, string | null> = {
+  "ikke-koblet":
+    "Sanity er ikke koblet på ennå. Kunstnere og verk er derfor tomme, og de faste sidene viser standardtekst.",
+  tomt: "Sanity er koblet på, men inneholder ingenting ennå. Kunstnere og verk er tomme, og de faste sidene viser standardtekst.",
+  utilgjengelig:
+    "Sanity svarer ikke akkurat nå, så kunstnere og verk vises ikke. Prøv å laste siden på nytt.",
+  "har-innhold": null,
+};
+const varselTekst = varsel[status];
+---
+
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tittel} · ARTZ</title>
+    <meta name="description" content={beskrivelse} />
+    <meta property="og:title" content={`${tittel} · ARTZ`} />
+    <meta property="og:description" content={beskrivelse} />
+    <meta property="og:locale" content="nb_NO" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    {varselTekst && <p class="varsel">{varselTekst}</p>}
+
+    <header class="topp">
+      <div class="innhold topp__rad">
+        <a class="logo" href="/">ARTZ</a>
+        <nav aria-label="Hovedmeny">
+          <ul class="meny">
+            {
+              meny.map((punkt) => (
+                <li>
+                  <a
+                    href={punkt.url}
+                    aria-current={sti.startsWith(punkt.url) ? "page" : undefined}
+                  >
+                    {punkt.navn}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="hovedinnhold">
+      <slot />
+    </main>
+
+    <footer class="bunn">
+      <div class="innhold bunn__rad">
+        <div>
+          <p class="stikkord">ARTZ</p>
+          <p class="meta">
+            Kunstformidling, utsmykking og rammeverksted.<br />
+            <a href="mailto:post@artz.no">post@artz.no</a>
+          </p>
+        </div>
+        <p class="meta">
+          © {new Date().getFullYear()} ARTZ. Alle verk tilhører kunstnerne.
+        </p>
+      </div>
+    </footer>
+
+    <style>
+      .topp {
+        border-bottom: 1px solid var(--strek);
+        position: sticky;
+        top: 0;
+        background: var(--papir);
+        z-index: 10;
+      }
+
+      .topp__rad {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.75rem 2rem;
+        padding-block: 1.1rem;
+      }
+
+      .logo {
+        font-family: var(--sans);
+        font-size: 1.125rem;
+        letter-spacing: 0.28em;
+        font-weight: 500;
+        border: 0;
+        margin-right: auto;
+      }
+
+      .meny {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1.4rem;
+        margin: 0;
+        padding: 0;
+        font-family: var(--sans);
+        font-size: 0.9375rem;
+      }
+
+      .meny a {
+        border-bottom-color: transparent;
+        padding-block: 0.35rem;
+        display: inline-block;
+      }
+
+      .meny a:hover,
+      .meny a[aria-current="page"] {
+        border-bottom-color: var(--tusj);
+      }
+
+      .bunn {
+        border-top: 1px solid var(--strek);
+        margin-top: clamp(2rem, 5vw, 3.5rem);
+        padding-block: 2.25rem;
+      }
+
+      .bunn__rad {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 1.5rem;
+        align-items: end;
+      }
+
+      .bunn p {
+        margin: 0 0 0.35em;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+name: Sikkerhetskopi av Sanity-innholdet
+
+# Gratisplanen i Sanity har bare 3 dagers utkasthistorikk. Denne jobben tar
+# en full eksport hver natt og legger den som en artefakt vi kan hente ned.
+# Se gjennomgangsnotatet, punkt 2.
+
+on:
+  schedule:
+    # 03:15 UTC hver natt.
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  eksporter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Eksporter datasettet
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+          PROSJEKT: ${{ secrets.SANITY_PROJECT_ID }}
+        run: |
+          mkdir -p backup
+          npx --yes sanity@latest dataset export production \
+            "backup/artz-$(date +%Y-%m-%d).tar.gz" \
+            --project "$PROSJEKT"
+
+      - name: Last opp som artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanity-backup-${{ github.run_id }}
+          path: backup/*.tar.gz
+          # 90 dager, altså samme historikk som Growth-planen ville gitt.
+          retention-days: 90

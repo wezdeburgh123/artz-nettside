@@ -1,0 +1,163 @@
+---
+import Base from "../layouts/Base.astro";
+import VerkKort from "../components/VerkKort.astro";
+import { alleVerk, TEKNIKK_NAVN } from "../lib/sanity";
+
+const alle: any[] = await alleVerk();
+
+// Filtrering skjer med vanlige lenker, ikke JavaScript. Fungerer overalt.
+const valgtKunstner = Astro.url.searchParams.get("kunstner") ?? "";
+const valgtTeknikk = Astro.url.searchParams.get("teknikk") ?? "";
+
+const kunstnere = [
+  ...new Map(
+    alle.filter((v) => v.kunstner).map((v) => [v.kunstner.slug, v.kunstner])
+  ).values(),
+].sort((a: any, b: any) => a.navn.localeCompare(b.navn, "nb"));
+
+const teknikker = [...new Set(alle.map((v) => v.teknikk).filter(Boolean))].sort(
+  (a, b) => (TEKNIKK_NAVN[a] ?? a).localeCompare(TEKNIKK_NAVN[b] ?? b, "nb")
+);
+
+const verk = alle.filter(
+  (v) =>
+    (!valgtKunstner || v.kunstner?.slug === valgtKunstner) &&
+    (!valgtTeknikk || v.teknikk === valgtTeknikk)
+);
+
+function url(endring: Record<string, string>) {
+  const p = new URLSearchParams();
+  const k = endring.kunstner ?? valgtKunstner;
+  const t = endring.teknikk ?? valgtTeknikk;
+  if (k) p.set("kunstner", k);
+  if (t) p.set("teknikk", t);
+  const s = p.toString();
+  return s ? `/galleri?${s}` : "/galleri";
+}
+---
+
+<Base tittel="Verk" beskrivelse="Original grafikk, malerier og skulptur formidlet av ARTZ.">
+  <section class="seksjon innhold">
+    <h1>Verk</h1>
+    <p class="ingress">
+      Original grafikk, malerier og skulptur. Ta kontakt for pris og
+      tilgjengelighet.
+    </p>
+
+    {
+      alle.length > 0 && (
+        <div class="filtre">
+          <div class="filter">
+            <span class="stikkord">Kunstner</span>
+            <ul>
+              <li>
+                <a href={url({ kunstner: "" })} aria-current={!valgtKunstner ? "true" : undefined}>Alle</a>
+              </li>
+              {kunstnere.map((k: any) => (
+                <li>
+                  <a
+                    href={url({ kunstner: k.slug })}
+                    aria-current={valgtKunstner === k.slug ? "true" : undefined}
+                  >
+                    {k.navn}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="filter">
+            <span class="stikkord">Teknikk</span>
+            <ul>
+              <li>
+                <a href={url({ teknikk: "" })} aria-current={!valgtTeknikk ? "true" : undefined}>Alle</a>
+              </li>
+              {teknikker.map((t: string) => (
+                <li>
+                  <a
+                    href={url({ teknikk: t })}
+                    aria-current={valgtTeknikk === t ? "true" : undefined}
+                  >
+                    {TEKNIKK_NAVN[t] ?? t}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )
+    }
+
+    {alle.length > 0 && <p class="meta antall">{verk.length} verk</p>}
+
+    {
+      verk.length > 0 ? (
+        <ul class="rutenett">
+          {verk.map((v: any) => (
+            <li><VerkKort verk={v} /></li>
+          ))}
+        </ul>
+      ) : alle.length > 0 ? (
+        <p>Ingen verk passer med dette utvalget. <a href="/galleri">Vis alle</a>.</p>
+      ) : (
+        <p class="tomt">
+          Verkene legges ut fortløpende. Ta kontakt på{" "}
+          <a href="mailto:post@artz.no">post@artz.no</a>{" "}for informasjon om hva
+          vi har tilgjengelig.
+        </p>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .filtre {
+    display: grid;
+    gap: 1.5rem;
+    margin-block: clamp(2rem, 5vw, 3rem) 1.5rem;
+    padding-top: clamp(1.5rem, 4vw, 2rem);
+    border-top: 1px solid var(--strek);
+  }
+
+  @media (min-width: 48rem) {
+    .filtre {
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  .filter .stikkord {
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+
+  .filter ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+    font-family: var(--sans);
+    font-size: 0.9375rem;
+  }
+
+  .filter a {
+    border-bottom-color: transparent;
+    padding-block: 0.2rem;
+  }
+
+  .filter a:hover,
+  .filter a[aria-current="true"] {
+    border-bottom-color: var(--tusj);
+  }
+
+  .antall {
+    margin-bottom: 1.5rem;
+  }
+
+  .tomt {
+    margin-top: 1rem;
+    font-size: 1.0625rem;
+  }
+</style>

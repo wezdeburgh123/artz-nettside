@@ -1,0 +1,72 @@
+---
+import Base from "../../layouts/Base.astro";
+import Bilde from "../../components/Bilde.astro";
+import { alleKunstnere } from "../../lib/sanity";
+
+const kunstnere = await alleKunstnere();
+---
+
+<Base
+  tittel="Kunstnere"
+  beskrivelse="Kunstnerne ARTZ samarbeider med."
+>
+  <section class="seksjon innhold">
+    <h1>Kunstnere</h1>
+    <p class="ingress">
+      Vi samarbeider med et utvalg kunstnere og deres grafiske verksted.
+    </p>
+
+    {
+      kunstnere.length > 0 ? (
+        <ul class="rutenett kunstnerliste">
+          {kunstnere.map((k: any) => (
+            <li>
+              <a class="kunstner" href={`/kunstnere/${k.slug}`}>
+                <Bilde kilde={k.portrett} alt={k.portrett?.alt || k.navn} bredde={600} />
+                <h2>{k.navn}</h2>
+                {k.levetid && <p class="meta">{k.levetid}</p>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="tomt">
+          Kunstnerne legges ut fortløpende. Ta kontakt på{" "}
+          <a href="mailto:post@artz.no">post@artz.no</a>{" "}for informasjon om hva
+          vi har tilgjengelig.
+        </p>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .kunstnerliste {
+    margin-top: clamp(2rem, 5vw, 3rem);
+  }
+
+  .kunstner {
+    border: 0;
+    display: block;
+  }
+
+  .kunstner h2 {
+    font-size: 1.125rem;
+    margin: 0.9rem 0 0.1em;
+  }
+
+  .kunstner:hover h2 {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .kunstner .meta {
+    margin: 0;
+  }
+
+  .tomt {
+    margin-top: 2.5rem;
+    font-size: 1.0625rem;
+  }
+</style>

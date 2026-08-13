@@ -1,0 +1,95 @@
+---
+import Base from "../../layouts/Base.astro";
+import Bilde from "../../components/Bilde.astro";
+import Tekst from "../../components/Tekst.astro";
+import VerkKort from "../../components/VerkKort.astro";
+import { kunstnerMedSlug } from "../../lib/sanity";
+
+const { slug } = Astro.params;
+const kunstner: any = slug ? await kunstnerMedSlug(slug) : null;
+
+if (!kunstner) {
+  return Astro.redirect("/kunstnere", 302);
+}
+
+const verk = kunstner.verk ?? [];
+---
+
+<Base tittel={kunstner.navn} beskrivelse={`Verk av ${kunstner.navn} hos ARTZ.`}>
+  <article class="seksjon innhold">
+    <p class="stikkord"><a href="/kunstnere">Kunstnere</a></p>
+
+    <div class="topp">
+      <div>
+        <h1>{kunstner.navn}</h1>
+        {kunstner.levetid && <p class="meta levetid">{kunstner.levetid}</p>}
+        {kunstner.presentasjon && <Tekst verdi={kunstner.presentasjon} />}
+      </div>
+      {
+        kunstner.portrett && (
+          <div class="portrett">
+            <Bilde
+              kilde={kunstner.portrett}
+              alt={kunstner.portrett?.alt || kunstner.navn}
+              bredde={700}
+              loading="eager"
+            />
+          </div>
+        )
+      }
+    </div>
+
+    {
+      verk.length > 0 ? (
+        <section class="verkseksjon">
+          <p class="stikkord">Verk</p>
+          <ul class="rutenett">
+            {verk.map((v: any) => (
+              <li><VerkKort verk={v} visKunstner={false} /></li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <p class="meta tomt">
+          Verk av denne kunstneren legges ut fortløpende. Ta kontakt på{" "}
+          <a href="mailto:post@artz.no">post@artz.no</a>{" "}for informasjon om hva
+          som er tilgjengelig.
+        </p>
+      )
+    }
+  </article>
+</Base>
+
+<style>
+  .topp {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .topp {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+  }
+
+  /* Portrettet skal støtte teksten, ikke overdøve den. */
+  .portrett {
+    max-width: 20rem;
+  }
+
+  .levetid {
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .verkseksjon {
+    margin-top: clamp(3rem, 7vw, 5rem);
+    border-top: 1px solid var(--strek);
+    padding-top: clamp(1.75rem, 4vw, 2.5rem);
+  }
+
+  .tomt {
+    margin-top: 3rem;
+  }
+</style>

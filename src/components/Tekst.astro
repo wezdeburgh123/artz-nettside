@@ -1,0 +1,25 @@
+---
+// Rendrer Portable Text fra Sanity.
+import { PortableText } from "astro-portabletext";
+
+interface Props {
+  verdi: any;
+}
+
+const { verdi } = Astro.props;
+---
+
+{verdi && <div class="brodtekst"><PortableText value={verdi} /></div>}
+
+<style>
+  .brodtekst :global(h2) {
+    margin-top: 2em;
+  }
+  .brodtekst :global(ul) {
+    max-width: 38em;
+    padding-left: 1.2em;
+  }
+  .brodtekst :global(img) {
+    margin-block: 2rem;
+  }
+</style>

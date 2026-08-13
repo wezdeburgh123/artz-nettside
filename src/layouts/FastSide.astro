@@ -1,0 +1,55 @@
+---
+import Base from "./Base.astro";
+import Bilde from "../components/Bilde.astro";
+import Tekst from "../components/Tekst.astro";
+import { sideMedNokkel } from "../lib/sanity";
+
+interface Props {
+  nokkel: string;
+  reservetittel: string;
+}
+
+const { nokkel, reservetittel } = Astro.props;
+const side = await sideMedNokkel(nokkel);
+const tittel = side?.tittel || reservetittel;
+---
+
+<Base tittel={tittel} beskrivelse={side?.ingress}>
+  <article class="seksjon innhold">
+    <h1>{tittel}</h1>
+    {side?.ingress && <p class="ingress">{side.ingress}</p>}
+    {
+      side?.bilde && (
+        <div class="hovedbilde">
+          <Bilde
+            kilde={side.bilde}
+            alt={side.bilde?.alt || ""}
+            bredde={1200}
+            variant="bred"
+            loading="eager"
+          />
+        </div>
+      )
+    }
+    {side?.tekst && <Tekst verdi={side.tekst} />}
+    <slot />
+    <p class="kontaktlinje">
+      Spørsmål? Send en e-post til <a href="mailto:post@artz.no">post@artz.no</a>
+      eller bruk <a href="/kontakt">kontaktskjemaet</a>.
+    </p>
+  </article>
+</Base>
+
+<style>
+  .hovedbilde {
+    margin-block: clamp(2rem, 5vw, 3rem);
+  }
+
+  .kontaktlinje {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--strek);
+    font-family: var(--sans);
+    font-size: 0.9375rem;
+  }
+</style>

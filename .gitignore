@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.astro/
+.netlify/
+.env
+.env.local
+.DS_Store
+backup/
+
+# Lokalt arkiv over erstattede filer. Git tar over historikken herfra.
+_arkiv/

@@ -1,0 +1,53 @@
+---
+// Tåler både et Sanity-bilde og en vanlig bildeadresse (demoinnholdet).
+import imageUrlBuilder from "@sanity/image-url";
+import { sanityClient } from "sanity:client";
+
+interface Props {
+  kilde: any;
+  alt?: string;
+  bredde?: number;
+  variant?: "standard" | "bred" | "fri";
+  loading?: "lazy" | "eager";
+  klasse?: string;
+}
+
+const {
+  kilde,
+  alt = "",
+  bredde = 900,
+  variant = "standard",
+  loading = "lazy",
+  klasse = "",
+} = Astro.props;
+
+let src: string | null = null;
+let altTekst = alt;
+
+if (typeof kilde === "string") {
+  src = kilde;
+} else if (kilde?.asset?._ref) {
+  const builder = imageUrlBuilder(sanityClient);
+  src = builder.image(kilde).width(bredde).fit("max").auto("format").url();
+  altTekst = alt || kilde.alt || "";
+}
+
+const flateklasse = [
+  "bildeflate",
+  variant === "bred" ? "bildeflate--bred" : "",
+  variant === "fri" ? "bildeflate--fri" : "",
+  klasse,
+]
+  .filter(Boolean)
+  .join(" ");
+---
+
+{
+  src ? (
+    <div class={flateklasse}>
+      <img src={src} alt={altTekst} loading={loading} decoding="async" />
+    </div>
+  ) : (
+    <div class={flateklasse} aria-hidden="true" />
+  )
+}

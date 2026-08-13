@@ -1,0 +1,34 @@
+{
+  "name": "artz-nettside",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "sanity": "sanity",
+    "eksporter": "sanity dataset export production backup/production-$(date +%Y-%m-%d).tar.gz"
+  },
+  "comment_overrides": "sanity 6.9.2 importerer @sanity/ui/toast, som først finnes i @sanity/ui 4. @sanity/visual-editing 3.x låser @sanity/ui til 3.x, og npm heiser 3.x til toppen. Vites forhåndsbygging av avhengigheter slår da opp @sanity/ui fra toppnivået, finner ikke ./toast, og Sanity Studio blir en blank side i utviklingsmodus. Overstyringen tvinger én versjon, 4.x, for alle. Kan fjernes den dagen @sanity/visual-editing støtter @sanity/ui 4 i egne avhengigheter. Se claude/artz-plan-gjennomgang.md.",
+  "overrides": {
+    "@sanity/ui": "^4.0.3"
+  },
+  "dependencies": {
+    "@astrojs/netlify": "^8.2.1",
+    "@astrojs/react": "^6.0.2",
+    "@sanity/astro": "^3.5.0",
+    "@sanity/client": "^7.14.1",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/locale-nb-no": "^1.1.38",
+    "astro": "^7.2.1",
+    "astro-portabletext": "^0.13.0",
+    "groq": "^4.10.2",
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
+    "react-is": "^19.2.2",
+    "sanity": "^6.9.2",
+    "styled-components": "^6.1.19"
+  }
+}

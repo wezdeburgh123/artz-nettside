@@ -1,0 +1,97 @@
+---
+import Base from "../../layouts/Base.astro";
+import Bilde from "../../components/Bilde.astro";
+import { alleSaker } from "../../lib/sanity";
+
+const saker: any[] = await alleSaker();
+
+const formatter = new Intl.DateTimeFormat("nb-NO", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+function dato(verdi: string) {
+  if (!verdi) return "";
+  return formatter.format(new Date(verdi));
+}
+---
+
+<Base tittel="Aktuelt" beskrivelse="Utstillinger, oppdrag og nyheter fra ARTZ.">
+  <section class="seksjon innhold">
+    <h1>Aktuelt</h1>
+    <p class="ingress">Utstillinger, oppdrag og nyheter.</p>
+
+    {
+      saker.length > 0 ? (
+        <ul class="saker">
+          {saker.map((s: any) => (
+            <li class="sak">
+              <a class="sak__bilde" href={`/aktuelt/${s.slug}`}>
+                <Bilde
+                  kilde={s.bilde}
+                  alt={s.bilde?.alt || s.tittel}
+                  bredde={700}
+                  variant="bred"
+                />
+              </a>
+              <div>
+                <p class="meta">
+                  <time datetime={s.dato}>{dato(s.dato)}</time>
+                  {s.sted && <> · {s.sted}</>}
+                </p>
+                <h2><a href={`/aktuelt/${s.slug}`}>{s.tittel}</a></h2>
+                {s.ingress && <p>{s.ingress}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Ingen saker publisert ennå.</p>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .saker {
+    list-style: none;
+    margin: clamp(2rem, 5vw, 3rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .sak {
+    display: grid;
+    gap: 1.25rem;
+    align-items: start;
+    padding-top: clamp(1.5rem, 4vw, 2rem);
+    border-top: 1px solid var(--strek);
+  }
+
+  @media (min-width: 48rem) {
+    .sak {
+      grid-template-columns: 20rem 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  .sak__bilde {
+    border: 0;
+    display: block;
+  }
+
+  .sak h2 {
+    font-size: 1.5rem;
+    margin-top: 0.25em;
+  }
+
+  .sak h2 a {
+    border-bottom-color: transparent;
+  }
+
+  .sak h2 a:hover {
+    border-bottom-color: var(--tusj);
+  }
+</style>

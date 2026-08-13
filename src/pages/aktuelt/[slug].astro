@@ -1,0 +1,58 @@
+---
+import Base from "../../layouts/Base.astro";
+import Bilde from "../../components/Bilde.astro";
+import Tekst from "../../components/Tekst.astro";
+import { sakMedSlug } from "../../lib/sanity";
+
+const { slug } = Astro.params;
+const sak: any = slug ? await sakMedSlug(slug) : null;
+
+if (!sak) {
+  return Astro.redirect("/aktuelt", 302);
+}
+
+const dato = sak.dato
+  ? new Intl.DateTimeFormat("nb-NO", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(sak.dato))
+  : "";
+---
+
+<Base tittel={sak.tittel} beskrivelse={sak.ingress}>
+  <article class="seksjon innhold sak">
+    <p class="stikkord"><a href="/aktuelt">Aktuelt</a></p>
+    <h1>{sak.tittel}</h1>
+    <p class="meta">
+      <time datetime={sak.dato}>{dato}</time>
+      {sak.sted && <> · {sak.sted}</>}
+    </p>
+    {sak.ingress && <p class="ingress">{sak.ingress}</p>}
+    {
+      sak.bilde && (
+        <div class="hovedbilde">
+          <Bilde
+            kilde={sak.bilde}
+            alt={sak.bilde?.alt || sak.tittel}
+            bredde={1200}
+            variant="bred"
+            loading="eager"
+          />
+        </div>
+      )
+    }
+    {sak.tekst && <Tekst verdi={sak.tekst} />}
+  </article>
+</Base>
+
+<style>
+  .sak .meta {
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hovedbilde {
+    margin-block: clamp(2rem, 5vw, 3rem);
+  }
+</style>
