@@ -11,6 +11,33 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
   ""
 );
 
+// Prosjekt-ID-en leses både fra .env via loadEnv og direkte fra miljøet,
+// fordi Netlify leverer den som en ren miljøvariabel uten .env-fil.
+const prosjektId =
+  PUBLIC_SANITY_PROJECT_ID || process.env.PUBLIC_SANITY_PROJECT_ID || "";
+const datasett =
+  PUBLIC_SANITY_DATASET || process.env.PUBLIC_SANITY_DATASET || "production";
+
+// Mangler ID-en i et produksjonsbygg, skal bygget stoppe her.
+//
+// 14. august 2026 lå nettstedet ute med alt innhold borte fordi variabelen
+// ikke var satt i Netlify. Bygget var grønt hele veien, siden konfigurasjonen
+// falt stille tilbake til «placeholder» og sidene bare viste et varselbånd.
+// Et rødt bygg er billigere enn en tom kunstnerside i produksjon.
+const erProduksjonsbygg =
+  Boolean(process.env.NETLIFY) || process.env.NODE_ENV === "production";
+
+if (erProduksjonsbygg && !prosjektId) {
+  throw new Error(
+    [
+      "PUBLIC_SANITY_PROJECT_ID mangler i byggemiljoet.",
+      "Uten den bygger nettstedet uten innhold.",
+      "Netlify: Site configuration -> Environment variables. Verdi: oe6d51b6.",
+      "Scope maa omfatte Builds. Deploy deretter paa nytt med toemt cache.",
+    ].join(" ")
+  );
+}
+
 export default defineConfig({
   // SSR. Publiserte endringer i Sanity er synlige ved neste sidelasting,
   // uten at nettstedet må bygges på nytt. Se gjennomgangsnotatet, punkt 1.
@@ -21,8 +48,8 @@ export default defineConfig({
   devToolbar: { enabled: false },
   integrations: [
     sanity({
-      projectId: PUBLIC_SANITY_PROJECT_ID || "placeholder",
-      dataset: PUBLIC_SANITY_DATASET || "production",
+      projectId: prosjektId || "placeholder",
+      dataset: datasett,
       // Ikke CDN.
       //
       // Oppdaget 13. august 2026: etter import av 21 kunstnere svarte

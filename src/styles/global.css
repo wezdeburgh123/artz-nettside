@@ -267,11 +267,24 @@ p {
 
 /* --- Merke i tekstflyten, over en overskrift ------------------- */
 
+/* Små merker skaleres kraftig ned. En stroke-width på 1 i en viewBox på 160
+   enheter blir en fjerdedels piksel bred når SVG-en vises på 48 piksler, og
+   antialiasingen vasker den ut uansett hvilken farge vi velger.
+   non-scaling-stroke holder streken på én CSS-piksel samme hvor mye formen
+   krympes. Gjelder bare de små merkene: de store formene skal beholde sin
+   skalerte strek. Rettet 14. august 2026, formene var nesten usynlige. */
+.form--merke svg *,
+.form--seksjonsmerke svg * {
+  vector-effect: non-scaling-stroke;
+}
+
 .form--merke {
   width: 3rem;
   margin: 0 0 1.1rem;
   color: var(--aksent);
-  opacity: 0.5;
+  /* Var 0.5, som ga 2,3:1 mot papiret. Under WCAG-grensen på 3:1 for
+     grafiske objekter. 0.7 gir 3,35:1 og leser fortsatt som dekor. */
+  opacity: 0.7;
 }
 
 .form--merke.form--passkors {
@@ -312,7 +325,10 @@ p {
   top: clamp(1.75rem, 4vw, 3rem);
   right: var(--luft);
   width: 2.5rem;
-  color: var(--strek);
+  /* Var var(--strek), som ga 1,2:1. Den er laget for hårstreker mellom
+     seksjoner, ikke for en form som skal leses. */
+  color: var(--tusj-dempet);
+  opacity: 0.75;
 }
 
 /* --- Bunnen ---------------------------------------------------- */
