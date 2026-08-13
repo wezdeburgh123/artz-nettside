@@ -23,9 +23,22 @@ export default defineConfig({
     sanity({
       projectId: PUBLIC_SANITY_PROJECT_ID || "placeholder",
       dataset: PUBLIC_SANITY_DATASET || "production",
-      useCdn: true,
+      // Ikke CDN.
+      //
+      // Oppdaget 13. august 2026: etter import av 21 kunstnere svarte
+      // live-API-et 21 mens apicdn svarte 0, og nettstedet viste tomt i
+      // flere minutter. CDN-et hadde en gammel respons liggende.
+      //
+      // Hele grunnen til at vi valgte SSR var at en publisering skal være
+      // synlig med én gang. Et CDN som kan ligge etter med ukjent tid
+      // river vekk det premisset. Vi betaler heller litt responstid per
+      // sidevisning. På dette trafikknivået merkes det ikke.
+      //
+      // Skal dette skaleres senere: CDN på igjen, kombinert med
+      // cache-invalidering fra en Sanity-webhook. Ikke før.
+      useCdn: false,
       apiVersion: "2026-08-13",
-      // Henger Sanity, skal sida vise demoinnhold framfor å bli stående.
+      // Henger Sanity, skal sida vise tomt framfor å bli stående.
       timeout: 8000,
       // Studio ligger på artz.no/admin. Én adresse eieren kan bokmerke.
       studioBasePath: "/admin",
