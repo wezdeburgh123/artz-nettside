@@ -50,7 +50,7 @@
 
 [[redirects]]
   from = "/bjorg-thoraldsdottir/*"
-  to = "/kunstnere/bjorg-thoraldsdottir"
+  to = "/kunstnere/bjorg-thorhallsdottir"
   status = 301
 
 [[redirects]]
@@ -101,7 +101,7 @@
 
 [[redirects]]
   from = "/bjorgthorallsdottir"
-  to = "/kunstnere/bjorg-thoraldsdottir"
+  to = "/kunstnere/bjorg-thorhallsdottir"
   status = 301
 
 [[redirects]]
@@ -216,12 +216,12 @@
 
 [[redirects]]
   from = "/645-2/*"
-  to = "/"
+  to = "/kunstnere/merete-sejersted-bodtker"
   status = 301
 
 [[redirects]]
   from = "/654-2/*"
-  to = "/"
+  to = "/kunstnere/merete-sejersted-bodtker"
   status = 301
 
 [[redirects]]
