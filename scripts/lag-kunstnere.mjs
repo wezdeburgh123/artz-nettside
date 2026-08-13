@@ -121,7 +121,12 @@ const dokumenter = alle.map((k) => {
   const s = slug(k.navn);
   return {
     // Fast ID, så importen kan kjøres på nytt uten å lage duplikater.
-    _id: `kunstner.${s}`,
+    //
+    // Bindestrek, ikke punktum. Punktum deler ID-en inn i en sti i Sanity,
+    // og dokumenter som ligger i en sti er ikke offentlig lesbare. Samme
+    // regel som skjuler `drafts.noe`. Med punktum var alle 21 usynlige for
+    // alle som ikke var innlogget. Bekreftet 13. august 2026.
+    _id: `kunstner-${s}`,
     _type: "kunstner",
     navn: k.navn,
     slug: { _type: "slug", current: s },

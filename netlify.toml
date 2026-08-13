@@ -176,12 +176,6 @@
   status = 301
 
 [[redirects]]
-  from = "/grafikksenteret"
-  to = "/grafikksenteret"
-  status = 301
-  force = false
-
-[[redirects]]
   from = "/grafikksenteret-i-oslo/*"
   to = "/grafikksenteret"
   status = 301
