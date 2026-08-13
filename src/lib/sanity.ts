@@ -40,8 +40,7 @@ const KUNSTNER_FELT = `
   levetid,
   "slug": slug.current,
   portrett,
-  presentasjon,
-  framhevet
+  presentasjon
 `;
 
 const VERK_FELT = `

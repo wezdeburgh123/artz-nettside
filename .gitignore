@@ -11,3 +11,7 @@ backup/
 _arkiv/
 
 public/plassholdere/
+
+# Rester fra FUSE-monteringer
+.fuse_hidden*
+_arkiv/

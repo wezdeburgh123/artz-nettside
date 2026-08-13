@@ -74,13 +74,17 @@ export const kunstner = defineType({
         },
       ],
     }),
-    defineField({
-      name: "framhevet",
-      title: "Vis på forsiden",
-      type: "boolean",
-      description: "Skru på for kunstnere som skal fram på forsiden.",
-      initialValue: false,
-    }),
+    // Feltet «Vis på forsiden» lå her fram til 14. august 2026. Det ble
+    // fjernet fordi ingenting brukte det: forsiden lister alle kunstnerne
+    // uansett. En bryter som ser ut som den gjør noe, og ikke gjør noe, er
+    // verre enn ingen bryter for en eier som skal drifte dette selv.
+    //
+    // Verdier som allerede er lagret i Sanity ligger urørt. Feltet vises
+    // bare ikke lenger i Studio. Skal forsiden få en egen kunstnerseksjon
+    // i bolk 3, settes feltet inn igjen da.
+    //
+    // Tilsvarende felt på Verk står, fordi det faktisk styrer «Utvalgte
+    // verk» på forsiden.
   ],
   preview: {
     select: { title: "navn", subtitle: "levetid", media: "portrett" },

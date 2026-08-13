@@ -5,9 +5,12 @@ import { datasettStatus } from "../lib/sanity";
 interface Props {
   tittel: string;
   beskrivelse?: string;
+  // Absolutt bildeadresse til deling på Facebook og lignende. Verksider
+  // sender med verket, slik at en delt lenke viser kunsten og ikke bare tekst.
+  delebilde?: string;
 }
 
-const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted." } =
+const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted.", delebilde } =
   Astro.props;
 
 const meny = [
@@ -45,6 +48,9 @@ const varselTekst = varsel[status];
     <meta property="og:description" content={beskrivelse} />
     <meta property="og:locale" content="nb_NO" />
     <meta property="og:type" content="website" />
+    {delebilde && <meta property="og:image" content={delebilde} />}
+    <meta name="twitter:card" content={delebilde ? "summary_large_image" : "summary"} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).href} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>

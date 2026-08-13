@@ -46,7 +46,7 @@ const lyskasseMeta = [
         aria-label={`Se «${verk.tittel}» i stor visning`}
       >
         <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
-        <span class="kort__hint" aria-hidden="true">Se større</span>
+        <span class="kort__hint" aria-hidden="true"></span>
       </a>
     ) : (
       <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
@@ -79,7 +79,15 @@ const lyskasseMeta = [
   }
 
   /* Diskret hint. Vises bare når musa er over eller kortet har fokus, og
-     ligger i hjørnet av bildeflaten så det ikke konkurrerer med verket. */
+     ligger i hjørnet av bildeflaten så det ikke konkurrerer med verket.
+
+     Teksten skrives av CSS, ikke av HTML. Sto den i HTML, ble den plukket
+     opp av tekstuttrekk og kunne havne i søkeresultater sammen med
+     verkstittelen. Oppdaget 14. august 2026. */
+  .kort__hint::after {
+    content: "Se større";
+  }
+
   .kort__hint {
     position: absolute;
     right: 0;

@@ -1,0 +1,382 @@
+diff --git a/src/components/VerkKort.astro b/src/components/VerkKort.astro
+index 8d2937a..a94d03a 100644
+--- a/src/components/VerkKort.astro
++++ b/src/components/VerkKort.astro
+@@ -1,6 +1,6 @@
+ ---
+ import Bilde from "./Bilde.astro";
+-import { TEKNIKK_NAVN } from "../lib/sanity";
++import { TEKNIKK_NAVN, verkUrl } from "../lib/sanity";
+ import { bildeUrl, bildeSett } from "../lib/bilde";
+ 
+ interface Props {
+@@ -54,7 +54,9 @@ const lyskasseMeta = [
+   }
+ 
+   <div class="kort__tekst">
+-    <h3>{verk.tittel}</h3>
++    {/* Arbeidsdeling: bildet åpner lyskassa for et raskt blikk, tittelen
++        går til verkets egen side. Den siste er det man kan sende til noen. */}
++    <h3><a class="kort__tittel" href={verkUrl(verk)}>{verk.tittel}</a></h3>
+     {visKunstner && verk.kunstner && (
+       <p class="kort__kunstner">
+         <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
+@@ -66,6 +68,14 @@ const lyskasseMeta = [
+ </article>
+ 
+ <style>
++  .kort__tittel {
++    border-bottom-color: transparent;
++  }
++
++  .kort__tittel:hover {
++    border-bottom-color: var(--tusj);
++  }
++
+   .kort__bilde {
+     display: block;
+     position: relative;
+diff --git a/src/layouts/Base.astro b/src/layouts/Base.astro
+index bffcd3a..9c0d488 100644
+--- a/src/layouts/Base.astro
++++ b/src/layouts/Base.astro
+@@ -5,9 +5,12 @@ import { datasettStatus } from "../lib/sanity";
+ interface Props {
+   tittel: string;
+   beskrivelse?: string;
++  // Absolutt bildeadresse til deling på Facebook og lignende. Verksider
++  // sender med verket, slik at en delt lenke viser kunsten og ikke bare tekst.
++  delebilde?: string;
+ }
+ 
+-const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted." } =
++const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted.", delebilde } =
+   Astro.props;
+ 
+ const meny = [
+@@ -45,6 +48,9 @@ const varselTekst = varsel[status];
+     <meta property="og:description" content={beskrivelse} />
+     <meta property="og:locale" content="nb_NO" />
+     <meta property="og:type" content="website" />
++    {delebilde && <meta property="og:image" content={delebilde} />}
++    <meta name="twitter:card" content={delebilde ? "summary_large_image" : "summary"} />
++    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).href} />
+     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+   </head>
+   <body>
+diff --git a/src/lib/sanity.ts b/src/lib/sanity.ts
+index 73d29ca..c56e0e9 100644
+--- a/src/lib/sanity.ts
++++ b/src/lib/sanity.ts
+@@ -82,6 +82,45 @@ export const alleVerk = () =>
+     []
+   );
+ 
++// ---------------------------------------------------------------------------
++// Adressen til ett verk.
++//
++// Verk har ikke slug-felt, og skal ikke få det: hvert felt André må fylle ut
++// er et felt han kan glemme eller fylle feil. Adressen bygges derfor av
++// tittelen, som er obligatorisk, pluss dokument-ID-en som holder den unik.
++// To verk som heter «Uten tittel» kolliderer dermed ikke.
++//
++// Bare ID-en slår opp. Titteldelen er kosmetikk, og feil tittel i adressen
++// sender besøkende videre til den riktige med 301.
++// ---------------------------------------------------------------------------
++
++export function verkSlug(tittel: string | undefined): string {
++  const s = (tittel ?? "")
++    .toLowerCase()
++    .replace(/æ/g, "ae")
++    .replace(/ø/g, "oe")
++    .replace(/å/g, "aa")
++    .normalize("NFD")
++    .replace(/[\u0300-\u036f]/g, "")
++    .replace(/[^a-z0-9]+/g, "-")
++    .replace(/^-+|-+$/g, "");
++  return s || "verk";
++}
++
++export const verkUrl = (verk: any) =>
++  `/verk/${verkSlug(verk?.tittel)}/${encodeURIComponent(verk?._id ?? "")}`;
++
++export const verkMedId = (id: string) =>
++  hent<any | null>(
++    defineQuery(`*[_type == "verk" && _id == $id][0]{
++      ${VERK_FELT},
++      "andreVerk": *[_type == "verk" && kunstner._ref == ^.kunstner._ref && _id != ^._id]
++        | order(_createdAt desc)[0...4]{${VERK_FELT}}
++    }`),
++    { id },
++    null
++  );
++
+ // Er ingen verk merket «vis på forsiden», tar vi de seks nyeste framfor
+ // ingenting. Da slipper eieren å huske avkrysningen for at forsiden skal leve.
+ export const framhevedeVerk = async () => {
+diff --git a/src/pages/verk/[slug]/[id].astro b/src/pages/verk/[slug]/[id].astro
+new file mode 100644
+index 0000000..6ab3d1e
+--- /dev/null
++++ b/src/pages/verk/[slug]/[id].astro
+@@ -0,0 +1,260 @@
++---
++import imageUrlBuilder from "@sanity/image-url";
++import { sanityClient } from "sanity:client";
++import Base from "../../../layouts/Base.astro";
++import Bilde from "../../../components/Bilde.astro";
++import VerkKort from "../../../components/VerkKort.astro";
++import Lyskasse from "../../../components/Lyskasse.astro";
++import { verkMedId, verkSlug, verkUrl, TEKNIKK_NAVN } from "../../../lib/sanity";
++
++const { slug, id } = Astro.params;
++
++let dokumentId = id ?? "";
++try {
++  dokumentId = decodeURIComponent(dokumentId);
++} catch {
++  // Ugyldig prosentkoding. La strengen stå, oppslaget under finner ingenting.
++}
++
++const verk: any = dokumentId ? await verkMedId(dokumentId) : null;
++
++// Finnes ikke verket, send til oversikten framfor å vise en tom side.
++if (!verk) {
++  return Astro.redirect("/galleri", 302);
++}
++
++// Én adresse per verk. Kommer noen inn med gammel eller feil titteldel,
++// for eksempel fordi tittelen er endret i Sanity, flyttes de til den riktige.
++const riktigSlug = verkSlug(verk.tittel);
++if (slug !== riktigSlug) {
++  return Astro.redirect(verkUrl(verk), 301);
++}
++
++const detaljer = [
++  ["Kunstner", verk.kunstner?.navn],
++  ["Teknikk", verk.teknikk ? TEKNIKK_NAVN[verk.teknikk] ?? verk.teknikk : null],
++  ["År", verk.aar],
++  ["Mål", verk.maal],
++  ["Opplag", verk.opplag],
++].filter(([, verdi]) => Boolean(verdi)) as [string, string][];
++
++const solgt = verk.status === "solgt";
++const andreVerk: any[] = verk.andreVerk ?? [];
++
++// Emnefelt ferdig utfylt. Da slipper den som skriver å forklare hvilket verk
++// det gjelder, og ARTZ slipper å gjette.
++const emne = encodeURIComponent(
++  `Forespørsel: ${verk.tittel}${verk.kunstner?.navn ? ` av ${verk.kunstner.navn}` : ""}`
++);
++
++let delebilde: string | undefined;
++if (verk.bilde?.asset?._ref) {
++  delebilde = imageUrlBuilder(sanityClient)
++    .image(verk.bilde)
++    .width(1200)
++    .height(630)
++    .fit("fill")
++    .bg("f1efe9")
++    .auto("format")
++    .url();
++}
++
++const beskrivelse = verk.beskrivelse
++  ? String(verk.beskrivelse).slice(0, 200)
++  : `${verk.tittel}${verk.kunstner?.navn ? ` av ${verk.kunstner.navn}` : ""}. Formidlet av ARTZ.`;
++---
++
++<Base tittel={verk.tittel} beskrivelse={beskrivelse} delebilde={delebilde}>
++  <article class="seksjon innhold">
++    <p class="stikkord smuler">
++      <a href="/galleri">Verk</a>
++      {
++        verk.kunstner && (
++          <>
++            <span aria-hidden="true"> / </span>
++            <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
++          </>
++        )
++      }
++    </p>
++
++    <div class="verkflate">
++      <Bilde
++        kilde={verk.bilde}
++        alt={verk.bilde?.alt || `${verk.tittel}${verk.kunstner?.navn ? ` av ${verk.kunstner.navn}` : ""}`}
++        bredde={1800}
++        variant="fri"
++        loading="eager"
++      />
++    </div>
++
++    <div class="under">
++      <div class="tekst">
++        <h1>{verk.tittel}</h1>
++        {
++          verk.kunstner && (
++            <p class="kunstner">
++              <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
++            </p>
++          )
++        }
++
++        {solgt && <p class="merkelapp">Solgt</p>}
++
++        {verk.beskrivelse && (
++          <div class="prosa om">
++            {String(verk.beskrivelse)
++              .split(/\n{2,}/)
++              .map((avsnitt: string) => <p>{avsnitt}</p>)}
++          </div>
++        )}
++      </div>
++
++      <aside class="fakta">
++        <dl>
++          {
++            detaljer.map(([navn, verdi]) => (
++              <div class="rad">
++                <dt class="stikkord">{navn}</dt>
++                <dd>{verdi}</dd>
++              </div>
++            ))
++          }
++        </dl>
++
++        <p class="foresporsel">
++          {
++            solgt
++              ? "Dette verket er solgt. Vi har ofte flere arbeider av samme kunstner."
++              : "Ta kontakt for pris og tilgjengelighet."
++          }
++        </p>
++        <a class="knapp" href={`mailto:post@artz.no?subject=${emne}`}>
++          Spør om dette verket
++        </a>
++      </aside>
++    </div>
++
++    {
++      andreVerk.length > 0 && verk.kunstner && (
++        <section class="mer">
++          <p class="stikkord">Flere verk av {verk.kunstner.navn}</p>
++          <ul class="rutenett">
++            {andreVerk.map((v: any) => (
++              <li>
++                <VerkKort verk={v} visKunstner={false} />
++              </li>
++            ))}
++          </ul>
++          <p class="meta tilbake">
++            <a href={`/galleri?kunstner=${verk.kunstner.slug}`}>
++              Se alle verk av {verk.kunstner.navn}
++            </a>
++          </p>
++        </section>
++      )
++    }
++  </article>
++
++  {/* Gjelder «flere verk»-rutenettet nederst. Selve verket vises
++      allerede stort øverst og trenger ingen lyskasse. */}
++  <Lyskasse />
++</Base>
++
++<style>
++  .smuler a {
++    border-bottom-color: transparent;
++  }
++
++  .smuler a:hover {
++    border-bottom-color: var(--tusj-dempet);
++  }
++
++  /* Verket er varen. Bildet får hele bredden, men aldri mer høyde enn
++     skjermen, slik at hele arbeidet er synlig uten å bla. */
++  .verkflate {
++    background: var(--papir-dyp);
++    display: grid;
++    place-items: center;
++    padding: clamp(1rem, 4vw, 3rem);
++    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
++  }
++
++  .verkflate :global(.bildeflate) {
++    background: none;
++    padding: 0;
++    width: auto;
++  }
++
++  .verkflate :global(img) {
++    max-height: 78vh;
++    width: auto;
++    max-width: 100%;
++  }
++
++  .under {
++    display: grid;
++    gap: clamp(1.5rem, 4vw, 3rem);
++    align-items: start;
++  }
++
++  @media (min-width: 56rem) {
++    .under {
++      grid-template-columns: minmax(0, 1fr) 18rem;
++    }
++  }
++
++  h1 {
++    margin-bottom: 0.15em;
++  }
++
++  .kunstner {
++    font-size: 1.25rem;
++    margin: 0 0 1rem;
++  }
++
++  .om {
++    margin-top: 1.5rem;
++  }
++
++  .fakta dl {
++    margin: 0 0 1.75rem;
++    border-top: 1px solid var(--strek);
++  }
++
++  .fakta .rad {
++    display: flex;
++    justify-content: space-between;
++    gap: 1rem;
++    padding-block: 0.6rem;
++    border-bottom: 1px solid var(--strek);
++  }
++
++  .fakta dt {
++    margin: 0;
++  }
++
++  .fakta dd {
++    margin: 0;
++    font-family: var(--sans);
++    font-size: 0.9375rem;
++    text-align: right;
++  }
++
++  .foresporsel {
++    font-family: var(--sans);
++    font-size: 0.9375rem;
++    margin-bottom: 1rem;
++  }
++
++  .mer {
++    margin-top: clamp(3rem, 7vw, 5rem);
++    border-top: 1px solid var(--strek);
++    padding-top: clamp(1.75rem, 4vw, 2.5rem);
++  }
++
++  .tilbake {
++    margin-top: 1.75rem;
++    margin-bottom: 0;
++  }
++</style>
