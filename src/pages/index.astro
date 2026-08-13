@@ -4,12 +4,15 @@ import Bilde from "../components/Bilde.astro";
 import VerkKort from "../components/VerkKort.astro";
 import Lyskasse from "../components/Lyskasse.astro";
 import Tekst from "../components/Tekst.astro";
+import Former from "../components/Former.astro";
 import { sideMedNokkel, framhevedeVerk, alleKunstnere } from "../lib/sanity";
 
 const side = await sideMedNokkel("forside");
 const verk = await framhevedeVerk();
 const kunstnere = await alleKunstnere();
 
+// Hvert bein har sin egen form. Sirklene er kunsten som møter et publikum,
+// de stablede rammene er passepartouten, strekene er trykkarket.
 const bein = [
   {
     tittel: "Kunst",
@@ -17,6 +20,7 @@ const bein = [
       "Original grafikk, malerier og skulptur fra kunstnerne vi samarbeider med. Salgsutstillinger for bedrifter og kunstforeninger.",
     url: "/galleri",
     lenke: "Se verk",
+    form: "sirkler" as const,
   },
   {
     tittel: "Utsmykking",
@@ -24,6 +28,7 @@ const bein = [
       "Vi setter sammen, rammer inn og henger opp kunst til kontorer, institusjoner og fellesarealer.",
     url: "/utsmykking",
     lenke: "Om utsmykking",
+    form: "strek" as const,
   },
   {
     tittel: "Rammeverksted",
@@ -31,13 +36,16 @@ const bein = [
       "Komplett og moderne rammeverksted. Håndlagde rammer i høy kvalitet, tilpasset hvert verk.",
     url: "/rammeverkstedet",
     lenke: "Om rammeverkstedet",
+    form: "ramme" as const,
   },
 ];
 ---
 
 <Base tittel="Kunstformidling og rammeverksted">
-  <section class="apning">
-    <div class="innhold apning__rad">
+  <section class="apning formlag formlag--klipp">
+    <Former variant="bue" klasse="form--apning-bue" />
+
+    <div class="innhold apning__rad overform">
       <div class="apning__tekst">
         <h1>{side?.tittel}</h1>
         <p class="ingress">{side?.ingress}</p>
@@ -45,6 +53,7 @@ const bein = [
       </div>
       {side?.bilde && (
         <div class="apning__bilde">
+          <Former variant="raster" klasse="form--bilde-raster" />
           <Bilde
             kilde={side.bilde}
             alt={side.bilde?.alt || ""}
@@ -62,6 +71,7 @@ const bein = [
       {
         bein.map((b) => (
           <li>
+            <Former variant={b.form} klasse="form--merke" />
             <h2>{b.tittel}</h2>
             <p>{b.tekst}</p>
             <p><a href={b.url}>{b.lenke}</a></p>
@@ -73,7 +83,8 @@ const bein = [
 
   {
     verk.length > 0 && (
-      <section class="seksjon seksjon--delt innhold">
+      <section class="seksjon seksjon--delt innhold formlag">
+        <Former variant="passkors" klasse="form--seksjonsmerke" />
         <p class="stikkord">Utvalgte verk</p>
         <ul class="rutenett">
           {verk.map((v: any) => (
@@ -95,7 +106,8 @@ const bein = [
 
   {
     kunstnere.length > 0 && (
-      <section class="seksjon seksjon--delt innhold">
+      <section class="seksjon seksjon--delt innhold formlag">
+        <Former variant="passkors" klasse="form--seksjonsmerke" />
         <p class="stikkord">Kunstnere</p>
         <p class="navneliste">
           {kunstnere.map((k: any, i: number) => (
@@ -115,6 +127,11 @@ const bein = [
 <style>
   .apning {
     padding-top: clamp(2rem, 6vw, 4.5rem);
+  }
+
+  /* Rasteret ligger absolutt inne i denne, og bak bildet. */
+  .apning__bilde {
+    position: relative;
   }
 
   .apning__rad {

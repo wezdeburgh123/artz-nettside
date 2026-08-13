@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Former from "../components/Former.astro";
 import { datasettStatus } from "../lib/sanity";
 
 interface Props {
@@ -82,8 +83,9 @@ const varselTekst = varsel[status];
       <slot />
     </main>
 
-    <footer class="bunn">
-      <div class="innhold bunn__rad">
+    <footer class="bunn formlag formlag--klipp">
+      <Former variant="bue" klasse="form--bunn" />
+      <div class="innhold bunn__rad overform">
         <div>
           <p class="stikkord">ARTZ</p>
           <p class="meta">

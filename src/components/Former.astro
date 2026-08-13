@@ -1,0 +1,94 @@
+---
+/**
+ * Abstrakte former. Rent dekorative, aldri bærere av mening.
+ *
+ * Formspråket er hentet fra trykkverkstedet framfor fra generisk web-dekor:
+ * passkorset fra trykkarket, buen fra valsen, rasteret fra trykkpunktene,
+ * de stablede rammene fra passepartouten. Da får siden et eget uttrykk uten
+ * at det konkurrerer med verkene.
+ *
+ * Alt tegnes med currentColor og styres av farge, størrelse og plassering
+ * fra global.css. Komponenten bestemmer bare formen.
+ *
+ * Alle former er aria-hidden og har pointer-events: none. En skjermleser
+ * skal aldri møte dem, og de skal aldri stjele et klikk.
+ */
+interface Props {
+  variant: "bue" | "sirkler" | "passkors" | "ramme" | "raster" | "strek";
+  /** Plasseringsklasse fra global.css, for eksempel "form--apning". */
+  klasse?: string;
+}
+
+const { variant, klasse } = Astro.props;
+const klasser = ["form", `form--${variant}`, klasse].filter(Boolean).join(" ");
+
+// Rasteret bruker et SVG-mønster, og mønstre trenger unik id per instans.
+const rasterId = `raster-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div class={klasser} aria-hidden="true">
+  {
+    variant === "bue" && (
+      <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M240 0A240 240 0 0 1 0 240" stroke="currentColor" stroke-width="1" />
+        <path d="M180 0A180 180 0 0 1 0 180" stroke="currentColor" stroke-width="1" opacity="0.7" />
+        <path d="M120 0A120 120 0 0 1 0 120" stroke="currentColor" stroke-width="1" opacity="0.45" />
+        <path d="M60 0A60 60 0 0 1 0 60" stroke="currentColor" stroke-width="1" opacity="0.25" />
+      </svg>
+    )
+  }
+
+  {
+    variant === "sirkler" && (
+      <svg viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="70" cy="65" r="60" fill="currentColor" opacity="0.12" />
+        <circle cx="130" cy="65" r="60" stroke="currentColor" stroke-width="1" />
+      </svg>
+    )
+  }
+
+  {
+    variant === "passkors" && (
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="22" stroke="currentColor" stroke-width="1" />
+        <circle cx="40" cy="40" r="9" stroke="currentColor" stroke-width="1" opacity="0.6" />
+        <path d="M40 0v28M40 52v28M0 40h28M52 40h28" stroke="currentColor" stroke-width="1" />
+      </svg>
+    )
+  }
+
+  {
+    variant === "ramme" && (
+      <svg viewBox="0 0 160 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="129" height="169" stroke="currentColor" stroke-width="1" opacity="0.45" />
+        <rect x="15.5" y="15.5" width="129" height="169" stroke="currentColor" stroke-width="1" opacity="0.7" />
+        <rect x="30.5" y="30.5" width="129" height="169" stroke="currentColor" stroke-width="1" />
+      </svg>
+    )
+  }
+
+  {
+    variant === "raster" && (
+      <svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id={rasterId} width="16" height="16" patternUnits="userSpaceOnUse">
+            <circle cx="8" cy="8" r="2" fill="currentColor" />
+          </pattern>
+        </defs>
+        <rect width="160" height="160" fill={`url(#${rasterId})`} />
+      </svg>
+    )
+  }
+
+  {
+    variant === "strek" && (
+      <svg viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M0 8h200M0 24h140M0 40h200M0 56h90"
+          stroke="currentColor"
+          stroke-width="1"
+        />
+      </svg>
+    )
+  }
+</div>

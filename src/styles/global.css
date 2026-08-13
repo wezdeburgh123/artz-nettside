@@ -8,6 +8,9 @@
   --tusj-dempet: #6a6660;
   --strek: #ddd9d1;
   --aksent: #4a5c5a;
+  /* Egen tone til de store formene. --strek er laget for hårstreker mellom
+     seksjoner og blir for svak når den strekkes over en halv skjerm. */
+  --form-lys: #cfc9bd;
 
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
     "Times New Roman", serif;
@@ -217,6 +220,123 @@ p {
    skjedde 13. august 2026 med filtrene på /galleri. */
 [hidden] {
   display: none !important;
+}
+
+/* =================================================================
+   Abstrakte former
+
+   Formene kommer fra Former.astro. Komponenten tegner formen, denne
+   fila bestemmer farge, størrelse og plassering. All plassering står
+   her og ikke i scoped style på sidene, fordi scoped style i Astro
+   ikke treffer elementer som er rendret inne i en barnekomponent.
+
+   Regler som gjelder alle former:
+   - de er dekor, aldri innhold, og har alltid aria-hidden i komponenten
+   - de tar aldri et klikk, pointer-events er av
+   - de ligger under teksten i stablingen
+   - de skal aldri kunne lage vannrett rulling. Foreldreelementet får
+     derfor .formlag--klipp der en form stikker ut over kanten
+   ================================================================= */
+
+.form {
+  pointer-events: none;
+  line-height: 0;
+  color: var(--strek);
+}
+
+.form svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Ramme rundt et område former kan ligge absolutt i. */
+.formlag {
+  position: relative;
+}
+
+.formlag--klipp {
+  overflow: clip;
+}
+
+/* Innhold som skal ligge over formene. */
+.overform {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Merke i tekstflyten, over en overskrift ------------------- */
+
+.form--merke {
+  width: 3rem;
+  margin: 0 0 1.1rem;
+  color: var(--aksent);
+  opacity: 0.5;
+}
+
+.form--merke.form--passkors {
+  width: 2.25rem;
+}
+
+.form--merke.form--strek {
+  width: 3.5rem;
+}
+
+/* --- Forsidens åpning ------------------------------------------ */
+
+.form--apning-bue {
+  position: absolute;
+  top: clamp(-6rem, -6vw, -2rem);
+  right: calc(var(--luft) * -1);
+  width: min(30rem, 48vw);
+  color: var(--form-lys);
+}
+
+/* Rasteret stikker fram bak nedre venstre hjørne av åpningsbildet.
+   Det ligger bak bildet med z-index -1, så det leses som et lag under
+   verket og ikke som en flekk oppå layouten. */
+.form--bilde-raster {
+  position: absolute;
+  left: clamp(-2rem, -2vw, -1rem);
+  bottom: clamp(-2rem, -2vw, -1rem);
+  width: clamp(4.5rem, 7vw, 7rem);
+  color: var(--aksent);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+/* --- Merke øverst til høyre i en seksjon ------------------------ */
+
+.form--seksjonsmerke {
+  position: absolute;
+  top: clamp(1.75rem, 4vw, 3rem);
+  right: var(--luft);
+  width: 2.5rem;
+  color: var(--strek);
+}
+
+/* --- Bunnen ---------------------------------------------------- */
+
+.form--bunn {
+  position: absolute;
+  right: calc(var(--luft) * -1);
+  bottom: -3.5rem;
+  width: min(20rem, 40vw);
+  color: var(--form-lys);
+  transform: rotate(180deg);
+}
+
+/* Mindre skjermer: formene blir fort påtrengende, så de dempes. */
+@media (max-width: 40rem) {
+  .form--apning-bue {
+    width: 60vw;
+    opacity: 0.7;
+  }
+
+  .form--seksjonsmerke,
+  .form--bunn {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
