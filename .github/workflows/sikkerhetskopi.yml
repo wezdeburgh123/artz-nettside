@@ -2,7 +2,6 @@ name: Sikkerhetskopi av Sanity-innholdet
 
 # Gratisplanen i Sanity har bare 3 dagers utkasthistorikk. Denne jobben tar
 # en full eksport hver natt og legger den som en artefakt vi kan hente ned.
-# Se gjennomgangsnotatet, punkt 2.
 
 on:
   schedule:
@@ -26,9 +25,15 @@ jobs:
           PROSJEKT: ${{ secrets.SANITY_PROJECT_ID }}
         run: |
           mkdir -p backup
-          npx --yes sanity@latest dataset export production \
+          # Flagget heter --project-id, ikke --project. Feil navn gir
+          # «Nonexistent flag» og exit code 2. Bekreftet 13. august 2026.
+          npx --yes sanity@latest datasets export production \
             "backup/artz-$(date +%Y-%m-%d).tar.gz" \
-            --project "$PROSJEKT"
+            --project-id "$PROSJEKT" \
+            --overwrite
+
+      - name: Vis hva som ble eksportert
+        run: ls -lh backup/
 
       - name: Last opp som artefakt
         uses: actions/upload-artifact@v4
