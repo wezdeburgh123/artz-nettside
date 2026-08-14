@@ -183,9 +183,23 @@
   to = "/kontakt"
   status = 301
 
+# Grafikksenteret er fjernet fra nettstedet 14. august 2026. Siden fantes
+# ikke lenger i virkeligheten, og det er uavklart om samarbeidet består.
+# Både den gamle WordPress-adressen og den vi selv publiserte peker til
+# forsiden. Rekkefølgen betyr ikke noe her, adressene overlapper ikke.
 [[redirects]]
   from = "/grafikksenteret-i-oslo/*"
-  to = "/grafikksenteret"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/grafikksenteret"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/grafikksenteret/*"
+  to = "/"
   status = 301
 
 [[redirects]]

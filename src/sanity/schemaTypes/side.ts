@@ -1,6 +1,7 @@
 import { defineField, defineType } from "sanity";
 
-// Faste sider: forside, utsmykking, rammeverkstedet, grafikksenteret, kontakt.
+// Faste sider: forside, utsmykking, rammeverkstedet, kontakt, om ARTZ.
+// Grafikksenteret er fjernet 14. august 2026, se _arkiv/grafikksenteret-fjernet-14aug/.
 // Eieren skal kunne endre teksten, men ikke lage nye sider eller endre adressen.
 
 export const side = defineType({
@@ -24,7 +25,6 @@ export const side = defineType({
           { title: "Forside", value: "forside" },
           { title: "Utsmykking", value: "utsmykking" },
           { title: "Rammeverkstedet", value: "rammeverkstedet" },
-          { title: "Grafikksenteret", value: "grafikksenteret" },
           { title: "Kontakt", value: "kontakt" },
           { title: "Om ARTZ", value: "om" },
         ],
@@ -93,7 +93,6 @@ export const side = defineType({
                   { title: "Verk", value: "/galleri" },
                   { title: "Utsmykking", value: "/utsmykking" },
                   { title: "Rammeverkstedet", value: "/rammeverkstedet" },
-                  { title: "Grafikksenteret", value: "/grafikksenteret" },
                   { title: "Om kunsten", value: "/om-kunsten" },
                   { title: "Kontakt", value: "/kontakt" },
                 ],

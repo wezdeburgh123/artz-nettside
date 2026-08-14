@@ -12,7 +12,7 @@ på, så du kan se og vurdere designet før noe ekte innhold finnes.
 ## Slik ser det ut nå
 
 - Sju sider: forside, kunstnere, verk, utsmykking, rammeverkstedet,
-  grafikksenteret, aktuelt, kontakt.
+  aktuelt, kontakt.
 - Fire innholdstyper i Sanity: Kunstner, Verk, Aktuelt, Fast side.
 - Studio ligger på `/admin`. Én adresse eieren kan bokmerke.
 - Demoinnholdet er tre oppdiktede kunstnere og seks verk, med vilje oppdiktet

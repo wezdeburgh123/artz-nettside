@@ -82,7 +82,7 @@ const sider: Record<string, any> = {
     // hit fordi den nå settes som uthevet sitat på forsiden. Ordlyden er
     // uendret, og den er hentet fra ARTZ' egen omtale i arkivet.
     sitat:
-      "Vi samarbeider med et utvalg kunstnere og deres grafiske verksted. Utvalget er smalt med vilje, og vi selger bare arbeider vi selv står for.",
+      "Vi samarbeider med et utvalg kunstnere. Utvalget er smalt med vilje, og vi selger bare arbeider vi selv står for.",
     bein: standardBein,
     tekst: null,
   },
@@ -208,17 +208,6 @@ const sider: Record<string, any> = {
       },
     ],
     tekst: null,
-  },
-  grafikksenteret: {
-    _id: "standard-grafikk",
-    tittel: "Grafikksenteret i Oslo",
-    nokkel: "grafikksenteret",
-    ingress:
-      "Grafisk kunsttrykkeri etablert i 1968, i Gamlebyen siden 1990.",
-    bilde: null,
-    tekst: avsnitt(
-      "Verkstedet trykker litografier etter håndverkstradisjon, blant annet på en trykkpresse for stentrykk som er over hundre år gammel."
-    ),
   },
   kontakt: {
     _id: "standard-kontakt",
