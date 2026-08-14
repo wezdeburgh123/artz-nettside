@@ -91,40 +91,123 @@ const sider: Record<string, any> = {
     tittel: "Utsmykking",
     nokkel: "utsmykking",
     ingress:
-      "Kunst til kontorer, institusjoner og fellesarealer. Vi velger ut verkene, rammer dem inn i eget verksted og henger dem opp. Én kontaktperson fra første befaring til ferdig vegg.",
+      "Kunst til kontorer, institusjoner og fellesarealer. Vi velger verkene, rammer dem inn i eget verksted og henger dem opp. Én kontaktperson hele veien.",
     bilde: null,
-    tekst: blokker(
-      "## Vi begynner med rommet",
-      "Første besøk handler om lokalet, ikke om kunsten. Hvor dagslyset faller, hva slags lys som henger i taket, hvilke farger som allerede finnes i rommet, og hvem som oppholder seg der over tid. En resepsjon folk ser i noen sekunder tåler noe annet enn en korridor de går i hver dag.",
-      "## Forslaget er konkret",
-      "Du får et utvalg verk med kunstnernavn, teknikk, mål og pris, satt opp mot hvilken vegg hvert verk er tenkt på. Det er lettere å si nei til et forslag enn til en idé, og vi regner med å bytte ut noe underveis.",
-      "## Grafikk gjør at budsjettet rekker lenger",
-      "Mye av det vi formidler er original grafikk i opplag: litografi, tresnitt, etsning og silketrykk. Signerte originalverk, til en brøkdel av hva et unikat koster. Skal tjue vegger fylles og ikke én, er det ofte forskjellen på et par bilder og et helt bygg.",
-      "## Rammen lages hos oss",
-      "Innrammingen er ikke satt bort. Ramme, passepartout og glass velges til det enkelte verket og til rommet det skal henge i. Henger bildene i sterkt dagslys, eller i et fellesareal der folk kommer nær dem, sier vi fra om hva slags glass og oppheng som gjelder.",
-      "## Kunstnerne",
-      "Vi jobber med et utvalg kunstnere framfor et bredt lager. Blant dem Nico Widerberg, Elling Reitan, Frank Brunner, Sverre Bjertnæs, Bjørg Thorhallsdottir, Gunn Vottestad og Arjuna Geir Aasehaug. Hele lista ligger under Kunstnere.",
-      "## Skal de ansatte kjøpe selv?",
-      "Da er det salgsutstilling framfor utsmykking. Vi rigger en utstilling i deres egne lokaler, der de som vil kan kjøpe direkte. Mange gjør begge deler: noen verk til fellesarealene, og en utstilling for dem som vil ha noe med hjem.",
-      "## Slik kommer vi raskt i gang",
-      "Vi svarer raskere hvis du har dette klart:",
-      "- Hva slags lokale det er, og omtrent hvor mange vegger",
-      "- Når kunsten skal henge",
-      "- En budsjettramme å regne på. Er du usikker, si det, så foreslår vi to nivåer",
-      "- Om dere har kunst fra før som det nye skal henge sammen med"
-    ),
+    punkter: [
+      {
+        _key: "punkt-rommet",
+        tittel: "Rommet først",
+        tekst:
+          "Dagslys, taklys, farger som allerede er der, og hvem som er i rommet daglig. En resepsjon tåler noe annet enn en korridor.",
+      },
+      {
+        _key: "punkt-forslaget",
+        tittel: "Et forslag du kan si nei til",
+        tekst:
+          "Verk med kunstner, teknikk, mål og pris, satt opp mot hvilken vegg de er tenkt på. Vi regner med å bytte ut noe.",
+      },
+      {
+        _key: "punkt-rammen",
+        tittel: "Rammen lages hos oss",
+        tekst:
+          "Innrammingen er ikke satt bort. Ramme, passepartout og glass velges til verket og til rommet det skal henge i.",
+      },
+      {
+        _key: "punkt-kunstnerne",
+        tittel: "Kunstnerne",
+        tekst:
+          "Et utvalg framfor et bredt lager. Widerberg, Reitan, Brunner, Bjertnæs, Thorhallsdottir, Vottestad, Aasehaug.",
+      },
+    ],
+    sporsmal: [
+      {
+        _key: "sp-pris",
+        sporsmal: "Hva koster det?",
+        svar: blokker(
+          "Mye av det vi formidler er original grafikk i opplag: litografi, tresnitt, etsning og silketrykk. Signerte originalverk til en brøkdel av hva et unikat koster. Skal tjue vegger fylles og ikke én, er det ofte forskjellen på et par bilder og et helt bygg. Pris på forespørsel."
+        ),
+      },
+      {
+        _key: "sp-ansatte",
+        sporsmal: "Skal de ansatte kjøpe selv?",
+        svar: blokker(
+          "Da er det salgsutstilling framfor utsmykking. Vi rigger utstillingen i deres egne lokaler, der de som vil kan kjøpe direkte. Mange gjør begge deler: noen verk til fellesarealene, og en utstilling for dem som vil ha noe med hjem."
+        ),
+      },
+      {
+        _key: "sp-forarbeid",
+        sporsmal: "Hva trenger dere fra oss?",
+        svar: blokker(
+          "Vi svarer raskere hvis dere har dette klart:",
+          "- Hva slags lokale det er, og omtrent hvor mange vegger",
+          "- Når kunsten skal henge",
+          "- En budsjettramme å regne på. Er dere usikre, si det, så foreslår vi to nivåer",
+          "- Om dere har kunst fra før som det nye skal henge sammen med"
+        ),
+      },
+    ],
+    tekst: null,
   },
   rammeverkstedet: {
     _id: "standard-ramme",
     tittel: "Rammeverkstedet",
     nokkel: "rammeverkstedet",
     ingress:
-      "Komplett og moderne rammeverksted med håndlagde rammer i høy kvalitet.",
+      "Håndlagde rammer i eget verksted. Vi måler opp verket og setter rammen sammen etter det, framfor å tilpasse verket til en ferdig ramme.",
     bilde: null,
-    tekst: avsnitt(
-      "Vi lager rammer for grafikk, malerier, fotografi, speil og tekstil. Alt måles opp og settes sammen for hånd.",
-      "Ta kontakt for pris. Har du målene på verket klare, går det raskere å svare."
-    ),
+    punkter: [
+      {
+        _key: "ramme-verksted",
+        tittel: "Alt lages her",
+        tekst:
+          "Rammene settes sammen i eget verksted. Det betyr at målene følger verket, også når verket ikke har standardmål.",
+      },
+      {
+        _key: "ramme-hva",
+        tittel: "Hva vi rammer inn",
+        tekst:
+          "Grafikk, malerier, fotografi, speil og tekstil. Du trenger ikke ha kjøpt verket hos oss.",
+      },
+      {
+        _key: "ramme-glass",
+        tittel: "Glass og passepartout",
+        tekst:
+          "Vi går gjennom hva verket faktisk trenger, og hva som er unødvendig for akkurat ditt bilde.",
+      },
+      {
+        _key: "ramme-rommet",
+        tittel: "Rammen hører til et rom",
+        tekst:
+          "Hvor bildet skal henge avgjør like mye som verket selv. Sterkt dagslys og fellesarealer stiller egne krav.",
+      },
+    ],
+    sporsmal: [
+      {
+        _key: "ramme-sp-pris",
+        sporsmal: "Hva koster en ramme?",
+        svar: blokker(
+          "Prisen avhenger av mål, listetype, glass og passepartout, så den settes per oppdrag. Ta kontakt for pris. Har du målene på verket klare, går det raskere å svare."
+        ),
+      },
+      {
+        _key: "ramme-sp-medbring",
+        sporsmal: "Hva bør jeg ha klart?",
+        svar: blokker(
+          "Verket selv om du har mulighet, ellers målene og et bilde av det. Si gjerne fra om:",
+          "- Hvor bildet skal henge, og om det står i sterkt dagslys",
+          "- Om det skal henge sammen med andre bilder",
+          "- Om verket har affeksjonsverdi eller er skjørt"
+        ),
+      },
+      {
+        _key: "ramme-sp-eget",
+        sporsmal: "Rammer dere inn det jeg allerede har?",
+        svar: blokker(
+          "Ja. Arvede bilder, fotografier, plakater og tekstil rammes inn på samme måte som verk vi har formidlet selv."
+        ),
+      },
+    ],
+    tekst: null,
   },
   grafikksenteret: {
     _id: "standard-grafikk",

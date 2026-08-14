@@ -107,6 +107,74 @@ export const side = defineType({
       ],
       validation: (Rule) => Rule.max(3),
     }),
+    // Rutenett og spørsmål. Brukes av utsmykking og rammeverkstedet, og er
+    // skjult på alle andre. Samme mønster som «bein» på forsiden: eieren skal
+    // bare se de feltene som gjelder siden han står i.
+    defineField({
+      name: "punkter",
+      title: "Punktene i rutenettet",
+      type: "array",
+      description:
+        "Korte punkter som vises side om side under innledningen. Maks seks.",
+      hidden: ({ document }: any) =>
+        !["utsmykking", "rammeverkstedet"].includes(document?.nokkel),
+      of: [
+        {
+          type: "object",
+          name: "sidePunkt",
+          title: "Punkt",
+          fields: [
+            {
+              name: "tittel",
+              title: "Overskrift",
+              type: "string",
+              validation: (Rule: any) => Rule.required(),
+            },
+            { name: "tekst", title: "Tekst", type: "text", rows: 3 },
+          ],
+          preview: { select: { title: "tittel", subtitle: "tekst" } },
+        },
+      ],
+      validation: (Rule) => Rule.max(6),
+    }),
+    defineField({
+      name: "sporsmal",
+      title: "Spørsmål og svar",
+      type: "array",
+      description:
+        "Vises nederst på siden. Svaret er skjult til leseren klikker på spørsmålet. Det første står åpent.",
+      hidden: ({ document }: any) =>
+        !["utsmykking", "rammeverkstedet"].includes(document?.nokkel),
+      of: [
+        {
+          type: "object",
+          name: "sideSporsmal",
+          title: "Spørsmål",
+          fields: [
+            {
+              name: "sporsmal",
+              title: "Spørsmål",
+              type: "string",
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: "svar",
+              title: "Svar",
+              type: "array",
+              of: [
+                {
+                  type: "block",
+                  styles: [{ title: "Vanlig tekst", value: "normal" }],
+                  lists: [{ title: "Punktliste", value: "bullet" }],
+                },
+              ],
+            },
+          ],
+          preview: { select: { title: "sporsmal" } },
+        },
+      ],
+      validation: (Rule) => Rule.max(6),
+    }),
     defineField({
       name: "tekst",
       title: "Tekst",

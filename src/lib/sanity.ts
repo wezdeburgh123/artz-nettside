@@ -217,7 +217,7 @@ export const sakMedSlug = (slug: string) =>
 export const sideMedNokkel = async (nokkel: string) => {
   const fraSanity = await hent<any | null>(
     defineQuery(`*[_type == "side" && nokkel == $nokkel][0]{
-      _id, tittel, nokkel, ingress, bilde, sitat, bein, tekst
+      _id, tittel, nokkel, ingress, bilde, sitat, bein, punkter, sporsmal, tekst
     }`),
     { nokkel },
     null

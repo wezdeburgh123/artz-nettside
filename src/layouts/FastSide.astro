@@ -12,6 +12,10 @@ interface Props {
 const { nokkel, reservetittel } = Astro.props;
 const side = await sideMedNokkel(nokkel);
 const tittel = side?.tittel || reservetittel;
+
+// Rutenettet og spørsmålene er valgfrie. Sider uten dem ser ut som før.
+const punkter: any[] = Array.isArray(side?.punkter) ? side.punkter : [];
+const sporsmal: any[] = Array.isArray(side?.sporsmal) ? side.sporsmal : [];
 ---
 
 <Base tittel={tittel} beskrivelse={side?.ingress}>
@@ -32,6 +36,39 @@ const tittel = side?.tittel || reservetittel;
       )
     }
     {side?.tekst && <Tekst verdi={side.tekst} />}
+
+    {
+      punkter.length > 0 && (
+        <ul class="punkter">
+          {punkter.map((punkt: any, i: number) => (
+            <li class="punkt">
+              <span class="punkt__nummer">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h2 class="punkt__tittel">{punkt.tittel}</h2>
+              {punkt.tekst && <p class="punkt__tekst">{punkt.tekst}</p>}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      sporsmal.length > 0 && (
+        <section class="sporsmal">
+          <h2 class="sporsmal__tittel">Det folk spør om</h2>
+          {sporsmal.map((post: any, i: number) => (
+            <details class="sporsmal__post" open={i === 0}>
+              <summary>{post.sporsmal}</summary>
+              <div class="sporsmal__svar">
+                <Tekst verdi={post.svar} />
+              </div>
+            </details>
+          ))}
+        </section>
+      )
+    }
+
     <slot />
     <p class="kontaktlinje">
       Spørsmål? Send en e-post til <a href="mailto:post@artz.no">post@artz.no</a>{" "}
@@ -43,6 +80,117 @@ const tittel = side?.tittel || reservetittel;
 <style>
   .hovedbilde {
     margin-block: clamp(2rem, 5vw, 3rem);
+  }
+
+  /* --- Rutenettet -------------------------------------------------
+     Punktene skal lese som en oversikt, ikke som en tjenesteliste.
+     Én strek over hvert punkt gjør jobben en boks ellers ville gjort,
+     uten å legge en ramme rundt noe som ikke er et bilde. */
+  .punkter {
+    list-style: none;
+    padding: 0;
+    margin-block: clamp(2.5rem, 5vw, 3.5rem);
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 3rem);
+    grid-template-columns: 1fr;
+  }
+
+  /* To kolonner, ikke auto-fit. Med fire punkter gir auto-fit tre kolonner
+     på en vanlig skjerm, og det fjerde punktet blir stående alene på rad to.
+     To kolonner gir 2 x 2 og er roligere. */
+  @media (min-width: 46rem) {
+    .punkter {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .punkt {
+    border-top: 1px solid var(--strek);
+    padding-top: 1.1rem;
+  }
+
+  .punkt__nummer {
+    font-family: var(--sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    color: var(--tusj-dempet);
+    display: block;
+    margin-bottom: 0.9rem;
+  }
+
+  .punkt__tittel {
+    font-size: 1.1875rem;
+    margin-bottom: 0.35em;
+  }
+
+  .punkt__tekst {
+    margin: 0;
+  }
+
+  /* --- Spørsmål og svar -------------------------------------------
+     Bygd på <details>, som gir åpning, lukking, tastatur og skjermleser
+     uten en linje JavaScript. Uten JavaScript virker den likevel, og en
+     søkemotor leser innholdet selv om det står lukket. */
+  .sporsmal {
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+
+  .sporsmal__tittel {
+    font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+  }
+
+  .sporsmal__post {
+    border-top: 1px solid var(--strek);
+  }
+
+  .sporsmal__post:last-of-type {
+    border-bottom: 1px solid var(--strek);
+  }
+
+  .sporsmal__post summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 1.1rem 2.5rem 1.1rem 0;
+    position: relative;
+    font-size: 1.1875rem;
+  }
+
+  .sporsmal__post summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Pil tegnet i CSS framfor som tegn, så den følger tekststørrelsen og
+     ikke skriftens egne piler, som varierer mellom systemer. */
+  .sporsmal__post summary::after {
+    content: "";
+    position: absolute;
+    right: 0.4rem;
+    top: 1.55rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-right: 1px solid var(--tusj-dempet);
+    border-bottom: 1px solid var(--tusj-dempet);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+  }
+
+  .sporsmal__post[open] summary::after {
+    transform: rotate(-135deg);
+  }
+
+  .sporsmal__post summary:focus-visible {
+    outline: 2px solid var(--aksent);
+    outline-offset: 2px;
+  }
+
+  .sporsmal__svar {
+    padding: 0 2.5rem 1.4rem 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sporsmal__post summary::after {
+      transition: none;
+    }
   }
 
   .kontaktlinje {
