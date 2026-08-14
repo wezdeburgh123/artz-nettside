@@ -108,6 +108,19 @@ export const verk = defineType({
       type: "boolean",
       initialValue: false,
     }),
+    // Satt 14. august 2026. Registerdrift-bildene er generativ grafikk laget
+    // for ARTZ, ikke verk av kunstnerne. Er dette huket av, viser nettstedet
+    // verket uten kunstnernavn og med en synlig merkelapp. Kunstneren blir
+    // stående i feltet over, fordi den styrer hvilket bilde kunstnerkortet
+    // låner, men navnet vises ingen steder sammen med verket.
+    defineField({
+      name: "plassholder",
+      title: "Midlertidig plassholder",
+      type: "boolean",
+      description:
+        "Huk av hvis bildet ikke er et verk av kunstneren. Da vises verket uten kunstnernavn, og merkes tydelig på nettsiden.",
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {

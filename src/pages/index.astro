@@ -6,39 +6,49 @@ import Lyskasse from "../components/Lyskasse.astro";
 import Tekst from "../components/Tekst.astro";
 import Former from "../components/Former.astro";
 import { sideMedNokkel, framhevedeVerk, alleKunstnere } from "../lib/sanity";
+import { standardBein } from "../lib/standardtekst";
 
 const side = await sideMedNokkel("forside");
 const verk = await framhevedeVerk();
 const kunstnere = await alleKunstnere();
 
-// Hvert bein har sin egen form. Sirklene er kunsten som møter et publikum,
-// de stablede rammene er passepartouten, strekene er trykkarket.
-const bein = [
-  {
-    tittel: "Kunst",
-    tekst:
-      "Original grafikk, malerier og skulptur fra kunstnerne vi samarbeider med. Salgsutstillinger for bedrifter og kunstforeninger.",
-    url: "/galleri",
-    lenke: "Se verk",
-    form: "sirkler" as const,
-  },
-  {
-    tittel: "Utsmykking",
-    tekst:
-      "Vi setter sammen, rammer inn og henger opp kunst til kontorer, institusjoner og fellesarealer.",
-    url: "/utsmykking",
-    lenke: "Om utsmykking",
-    form: "strek" as const,
-  },
-  {
-    tittel: "Rammeverksted",
-    tekst:
-      "Komplett og moderne rammeverksted. Håndlagde rammer i høy kvalitet, tilpasset hvert verk.",
-    url: "/rammeverkstedet",
-    lenke: "Om rammeverkstedet",
-    form: "ramme" as const,
-  },
-];
+// De tre boksene kommer fra Sanity når forsiden er lagt inn der, ellers fra
+// standardteksten. André redigerer overskrift, tekst og hvilken side boksen
+// peker til. Formen og lenketeksten utledes her, av to grunner: de er dekor
+// og navigasjon, ikke innhold, og det er to felt mindre han kan gjøre feil.
+//
+// Formvalget: sirklene er kunsten som møter et publikum, strekene er
+// trykkarket, de stablede rammene er passepartouten.
+const FORM_FOR_LENKE: Record<string, "sirkler" | "strek" | "ramme" | "raster" | "passkors"> = {
+  "/galleri": "sirkler",
+  "/utsmykking": "strek",
+  "/rammeverkstedet": "ramme",
+  "/grafikksenteret": "raster",
+  "/om-kunsten": "passkors",
+  "/kontakt": "passkors",
+};
+
+const LENKETEKST: Record<string, string> = {
+  "/galleri": "Se verk",
+  "/utsmykking": "Om utsmykking",
+  "/rammeverkstedet": "Om rammeverkstedet",
+  "/grafikksenteret": "Om Grafikksenteret",
+  "/om-kunsten": "Om kunsten",
+  "/kontakt": "Ta kontakt",
+};
+
+const beinFraInnhold =
+  side?.bein && side.bein.length > 0 ? side.bein : standardBein;
+
+const bein = beinFraInnhold
+  .filter((b: any) => b?.tittel && b?.lenke)
+  .map((b: any) => ({
+    tittel: b.tittel,
+    tekst: b.tekst ?? "",
+    url: b.lenke,
+    lenke: LENKETEKST[b.lenke] ?? "Les mer",
+    form: FORM_FOR_LENKE[b.lenke] ?? "passkors",
+  }));
 ---
 
 <Base tittel="Kunstformidling og rammeverksted">
@@ -92,6 +102,16 @@ const bein = [
           ))}
         </ul>
         <p class="mer"><a href="/galleri">Alle verk</a></p>
+      </section>
+    )
+  }
+
+  {
+    side?.sitat && (
+      <section class="seksjon seksjon--delt innhold">
+        <blockquote class="sitat">
+          <p>{side.sitat}</p>
+        </blockquote>
       </section>
     )
   }
@@ -170,6 +190,26 @@ const bein = [
     margin-top: 2.5rem;
     font-family: var(--sans);
     font-size: 0.9375rem;
+  }
+
+  /* Uthevet setning. Samme serif som resten av siden, bare større og med
+     god luft rundt. Ingen anførselstegn og ingen kursiv: dette er ARTZ som
+     sier noe om seg selv, ikke et sitat fra en annen. */
+  .sitat {
+    margin: 0;
+    text-align: center;
+    padding-block: clamp(1rem, 3vw, 2.5rem);
+  }
+
+  /* Bredden står på avsnittet, ikke på blockquote. em regnes mot elementets
+     egen skriftstørrelse, og blockquote arver grunnskriften. Sto den der,
+     ble linja under halvparten så lang som tiltenkt. */
+  .sitat p {
+    font-size: clamp(1.375rem, 2.8vw, 1.9375rem);
+    line-height: 1.35;
+    margin: 0 auto;
+    max-width: 15em;
+    text-wrap: balance;
   }
 
   .navneliste {

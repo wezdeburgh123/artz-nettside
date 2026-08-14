@@ -54,6 +54,7 @@ const VERK_FELT = `
   status,
   beskrivelse,
   framhevet,
+  plassholder,
   "kunstner": kunstner->{navn, "slug": slug.current}
 `;
 
@@ -61,8 +62,11 @@ const VERK_FELT = `
 // verk-registerdrift-<slug>-<nr>. Se claude/artz-plassholderbilder.md.
 // Vurderingen gjores i JavaScript og ikke i GROQ, slik at en feil her gir
 // feil bilde og ikke en tom kunstnerliste.
-const erPlassholder = (id: unknown) =>
-  typeof id === "string" && id.startsWith("verk-registerdrift-");
+// Feltet «plassholder» på verket er fasit. ID-prefikset er reserve, for de
+// tilfellene der feltet ikke er satt ennå. Se verk-skjemaet.
+const erPlassholder = (verk: any) =>
+  verk?.plassholder === true ||
+  (typeof verk?._id === "string" && verk._id.startsWith("verk-registerdrift-"));
 
 export type Kortbildekilde = "portrett" | "verk" | "plassholder" | "ingen";
 
@@ -75,7 +79,7 @@ export const alleKunstnere = async () => {
     defineQuery(`*[_type == "kunstner"] | order(navn asc){
       ${KUNSTNER_FELT},
       "verksbilder": *[_type == "verk" && references(^._id) && defined(bilde.asset)]
-        | order(_createdAt desc)[0...6]{ _id, bilde }
+        | order(_createdAt desc)[0...6]{ _id, bilde, plassholder }
     }`),
     {},
     []
@@ -83,7 +87,7 @@ export const alleKunstnere = async () => {
 
   return rader.map((k: any) => {
     const verk: any[] = Array.isArray(k.verksbilder) ? k.verksbilder : [];
-    const ekte = verk.find((v) => !erPlassholder(v?._id));
+    const ekte = verk.find((v) => !erPlassholder(v));
     const laant = ekte ?? verk[0] ?? null;
     const harPortrett = Boolean(k?.portrett?.asset);
 
@@ -103,8 +107,12 @@ export const alleKunstnere = async () => {
   });
 };
 
-export const kunstnerMedSlug = (slug: string) =>
-  hent<any | null>(
+// Kunstnersiden viser bare ekte verk. Et plassholderbilde skal aldri stå
+// under en kunstners navn som om det var hans arbeid. Filtreringen gjøres i
+// JavaScript, ikke i GROQ, slik at en feil her gir for mange verk og ikke en
+// tom side. Se arbeidsreglene i prosjektminnet.
+export const kunstnerMedSlug = async (slug: string) => {
+  const kunstner = await hent<any | null>(
     defineQuery(`*[_type == "kunstner" && slug.current == $slug][0]{
       ${KUNSTNER_FELT},
       "verk": *[_type == "verk" && references(^._id)] | order(_createdAt desc){${VERK_FELT}}
@@ -112,6 +120,10 @@ export const kunstnerMedSlug = (slug: string) =>
     { slug },
     null
   );
+  if (!kunstner) return null;
+  const verk = Array.isArray(kunstner.verk) ? kunstner.verk : [];
+  return { ...kunstner, verk: verk.filter((v: any) => v?.plassholder !== true) };
+};
 
 export const alleVerk = () =>
   hent<any[]>(
@@ -205,7 +217,7 @@ export const sakMedSlug = (slug: string) =>
 export const sideMedNokkel = async (nokkel: string) => {
   const fraSanity = await hent<any | null>(
     defineQuery(`*[_type == "side" && nokkel == $nokkel][0]{
-      _id, tittel, nokkel, ingress, bilde, tekst
+      _id, tittel, nokkel, ingress, bilde, sitat, bein, tekst
     }`),
     { nokkel },
     null

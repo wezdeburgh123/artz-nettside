@@ -9,6 +9,11 @@ interface Props {
 }
 
 const { verk, visKunstner = true } = Astro.props;
+
+// Et plassholderbilde skal aldri stå med et kunstnernavn under seg.
+// Koblingen finnes i dataene, den vises bare ikke. Se verk-skjemaet.
+const erPlassholder = verk?.plassholder === true;
+const visNavn = visKunstner && !erPlassholder && Boolean(verk.kunstner);
 const detaljer = [
   verk.teknikk ? TEKNIKK_NAVN[verk.teknikk] ?? verk.teknikk : null,
   verk.aar,
@@ -24,12 +29,17 @@ const storSett = bildeSett(verk.bilde);
 // skjuler det, fordi lyskassa dekker hele skjermen og da er konteksten
 // borte.
 const lyskasseMeta = [
-  verk.kunstner?.navn,
+  erPlassholder ? "Generativ plassholder for ARTZ" : verk.kunstner?.navn,
   ...detaljer,
-  verk.status === "solgt" ? "Solgt" : null,
+  !erPlassholder && verk.status === "solgt" ? "Solgt" : null,
 ]
   .filter(Boolean)
   .join(" · ");
+
+// Alt-teksten skal si hva bildet faktisk er, ikke hva det står oppført som.
+const bildeAlt = erPlassholder
+  ? `Generativ plassholder fra serien Registerdrift. Ikke et verk av en av kunstnerne.`
+  : verk.bilde?.alt || verk.tittel;
 ---
 
 <article class="kort">
@@ -42,14 +52,14 @@ const lyskasseMeta = [
         data-sett={storSett}
         data-tittel={verk.tittel}
         data-meta={lyskasseMeta}
-        data-alt={verk.bilde?.alt || verk.tittel}
+        data-alt={bildeAlt}
         aria-label={`Se «${verk.tittel}» i stor visning`}
       >
-        <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
+        <Bilde kilde={verk.bilde} alt={bildeAlt} bredde={700} />
         <span class="kort__hint" aria-hidden="true"></span>
       </a>
     ) : (
-      <Bilde kilde={verk.bilde} alt={verk.bilde?.alt || verk.tittel} bredde={700} />
+      <Bilde kilde={verk.bilde} alt={bildeAlt} bredde={700} />
     )
   }
 
@@ -57,13 +67,14 @@ const lyskasseMeta = [
     {/* Arbeidsdeling: bildet åpner lyskassa for et raskt blikk, tittelen
         går til verkets egen side. Den siste er det man kan sende til noen. */}
     <h3><a class="kort__tittel" href={verkUrl(verk)}>{verk.tittel}</a></h3>
-    {visKunstner && verk.kunstner && (
+    {visNavn && (
       <p class="kort__kunstner">
         <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
       </p>
     )}
     <p class="meta">{detaljer.join(" · ")}</p>
-    {verk.status === "solgt" && <p class="merkelapp">Solgt</p>}
+    {erPlassholder && <p class="merkelapp merkelapp--plassholder">Plassholder</p>}
+    {!erPlassholder && verk.status === "solgt" && <p class="merkelapp">Solgt</p>}
   </div>
 </article>
 

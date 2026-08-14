@@ -11,6 +11,12 @@
   /* Egen tone til de store formene. --strek er laget for hårstreker mellom
      seksjoner og blir for svak når den strekkes over en halv skjerm. */
   --form-lys: #cfc9bd;
+  /* Papir hevet akkurat nok til at kornet kan trekke det ned igjen.
+     Kornet legges på med multiply og gjør enhver flate mørkere. Med
+     --korn-styrke 0.2 er tapet 2 % luminans, og en flate som starter på
+     #fffefc lander på (248, 247, 245), altså papir. Måler du en kornet
+     flate mot --papir og de er like, står dette riktig. */
+  --papir-hevet: #fffefc;
 
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
     "Times New Roman", serif;
@@ -19,6 +25,12 @@
 
   --bredde: 76rem;
   --luft: clamp(1.25rem, 4vw, 3rem);
+
+  /* Papirkorn. Tegnet med feTurbulence i en innebygd SVG, så det koster
+     ingen nedlasting og skalerer med skjermen. Se .korn lenger ned. */
+  --korn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='k' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23k)'/%3E%3C/svg%3E");
+  --korn-styrke: 0.2;
+  --korn-rute: 180px;
 }
 
 *,
@@ -187,6 +199,13 @@ p {
   color: var(--tusj-dempet);
 }
 
+/* Plassholdermerket er et forbehold, ikke en nøytral etikett. Det skal være
+   lettere å få øye på enn «Solgt», uten å rope. */
+.merkelapp--plassholder {
+  border-color: var(--tusj-dempet);
+  color: var(--tusj);
+}
+
 .knapp {
   font-family: var(--sans);
   font-size: 0.9375rem;
@@ -353,6 +372,47 @@ p {
   .form--bunn {
     display: none;
   }
+}
+
+/* =================================================================
+   Korn
+
+   Svak papirtekstur på flater som ikke bærer bilder, altså toppen og
+   bunnen. Verkene skal fortsatt være det eneste som har overflate, så
+   kornet ligger med vilje på grensen av det synlige.
+
+   Kornet skal gi tekstur, ikke tone. multiply gjør alltid flaten mørkere,
+   og med styrke 0.4 ble bunnen et grått bånd mot papiret over. Derfor
+   starter en kornet flate på --papir-hevet og lander på --papir. Endrer du
+   --korn-styrke, må bunnfargen justeres tilsvarende.
+
+   Regler:
+   - kornet er dekor og tar aldri et klikk
+   - det ligger under innholdet i stablingen, så tekst blir aldri
+     liggende bak støy. Innhold som skal over får .overform
+   - styrken justeres per flate med --korn-styrke, ikke ved å endre
+     mønsteret
+   ================================================================= */
+
+.korn {
+  position: relative;
+  /* Holder blandingen inne i flaten. Uten den blander kornet seg med alt
+     som ligger bak helt opp til rota, og styrken blir uforutsigbar. */
+  isolation: isolate;
+}
+
+.korn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--korn);
+  background-size: var(--korn-rute) var(--korn-rute);
+  opacity: var(--korn-styrke);
+  /* multiply gjør kornet til en skygge i papiret framfor et grått slør
+     oppå det. Uten den leser flaten som skitten, ikke som papir. */
+  mix-blend-mode: multiply;
 }
 
 @media (prefers-reduced-motion: reduce) {

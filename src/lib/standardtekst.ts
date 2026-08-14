@@ -21,6 +21,34 @@ function avsnitt(...tekster: string[]) {
   }));
 }
 
+// De tre boksene under aapningen paa forsiden. Ligger her og ikke i
+// index.astro fordi de nå kan overstyres fra Sanity, og reserven skal komme
+// fra samme sted som resten av reserveteksten. Formen som tegnes ved siden
+// av hver boks bestemmes av hvilken side den peker til, se index.astro.
+export const standardBein = [
+  {
+    _key: "bein-kunst",
+    tittel: "Kunst",
+    tekst:
+      "Original grafikk, malerier og skulptur fra kunstnerne vi samarbeider med. Salgsutstillinger for bedrifter og kunstforeninger.",
+    lenke: "/galleri",
+  },
+  {
+    _key: "bein-utsmykking",
+    tittel: "Utsmykking",
+    tekst:
+      "Vi setter sammen, rammer inn og henger opp kunst til kontorer, institusjoner og fellesarealer.",
+    lenke: "/utsmykking",
+  },
+  {
+    _key: "bein-ramme",
+    tittel: "Rammeverksted",
+    tekst:
+      "Komplett og moderne rammeverksted. Håndlagde rammer i høy kvalitet, tilpasset hvert verk.",
+    lenke: "/rammeverkstedet",
+  },
+];
+
 const sider: Record<string, any> = {
   forside: {
     _id: "standard-forside",
@@ -29,9 +57,13 @@ const sider: Record<string, any> = {
     ingress:
       "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Vi arrangerer salgsutstillinger, tar utsmykkingsoppdrag og har eget rammeverksted.",
     bilde: null,
-    tekst: avsnitt(
-      "Vi samarbeider med et utvalg kunstnere og deres grafiske verksted. Utvalget er smalt med vilje, og vi selger bare arbeider vi selv står for."
-    ),
+    // Setningen sto tidligere som et vanlig avsnitt i tekst. Den er flyttet
+    // hit fordi den nå settes som uthevet sitat på forsiden. Ordlyden er
+    // uendret, og den er hentet fra ARTZ' egen omtale i arkivet.
+    sitat:
+      "Vi samarbeider med et utvalg kunstnere og deres grafiske verksted. Utvalget er smalt med vilje, og vi selger bare arbeider vi selv står for.",
+    bein: standardBein,
+    tekst: null,
   },
   utsmykking: {
     _id: "standard-utsmykking",

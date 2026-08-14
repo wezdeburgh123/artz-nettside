@@ -30,21 +30,31 @@ if (slug !== riktigSlug) {
   return Astro.redirect(verkUrl(verk), 301);
 }
 
+// Et plassholderbilde skal ikke stå med et kunstnernavn noe sted på siden.
+// Koblingen finnes i dataene fordi den styrer hvilket bilde kunstnerkortet
+// låner, men den vises ikke. Se verk-skjemaet.
+const erPlassholder = verk.plassholder === true;
+const visKunstner = !erPlassholder && Boolean(verk.kunstner);
+
 const detaljer = [
-  ["Kunstner", verk.kunstner?.navn],
+  ["Kunstner", visKunstner ? verk.kunstner.navn : null],
   ["Teknikk", verk.teknikk ? TEKNIKK_NAVN[verk.teknikk] ?? verk.teknikk : null],
   ["År", verk.aar],
   ["Mål", verk.maal],
   ["Opplag", verk.opplag],
 ].filter(([, verdi]) => Boolean(verdi)) as [string, string][];
 
-const solgt = verk.status === "solgt";
-const andreVerk: any[] = verk.andreVerk ?? [];
+const solgt = !erPlassholder && verk.status === "solgt";
+// «Flere verk av» henter fra samme kunstner. For en plassholder ville det
+// vært den andre plassholderen, under et navn vi nettopp har tatt bort.
+const andreVerk: any[] = erPlassholder
+  ? []
+  : (verk.andreVerk ?? []).filter((v: any) => v?.plassholder !== true);
 
 // Emnefelt ferdig utfylt. Da slipper den som skriver å forklare hvilket verk
 // det gjelder, og ARTZ slipper å gjette.
 const emne = encodeURIComponent(
-  `Forespørsel: ${verk.tittel}${verk.kunstner?.navn ? ` av ${verk.kunstner.navn}` : ""}`
+  `Forespørsel: ${verk.tittel}${visKunstner ? ` av ${verk.kunstner.navn}` : ""}`
 );
 
 let delebilde: string | undefined;
@@ -61,7 +71,7 @@ if (verk.bilde?.asset?._ref) {
 
 const beskrivelse = verk.beskrivelse
   ? String(verk.beskrivelse).slice(0, 200)
-  : `${verk.tittel}${verk.kunstner?.navn ? ` av ${verk.kunstner.navn}` : ""}. Formidlet av ARTZ.`;
+  : `${verk.tittel}${visKunstner ? ` av ${verk.kunstner.navn}` : ""}. Formidlet av ARTZ.`;
 ---
 
 <Base tittel={verk.tittel} beskrivelse={beskrivelse} delebilde={delebilde}>
@@ -69,7 +79,7 @@ const beskrivelse = verk.beskrivelse
     <p class="stikkord smuler">
       <a href="/galleri">Verk</a>
       {
-        verk.kunstner && (
+        visKunstner && (
           <>
             <span aria-hidden="true"> / </span>
             <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
@@ -81,7 +91,11 @@ const beskrivelse = verk.beskrivelse
     <div class="verkflate">
       <Bilde
         kilde={verk.bilde}
-        alt={verk.bilde?.alt || `${verk.tittel}${verk.kunstner?.navn ? ` av ${verk.kunstner.navn}` : ""}`}
+        alt={
+          erPlassholder
+            ? "Generativ plassholder fra serien Registerdrift. Ikke et verk av en av kunstnerne."
+            : verk.bilde?.alt || `${verk.tittel}${visKunstner ? ` av ${verk.kunstner.navn}` : ""}`
+        }
         bredde={1800}
         variant="fri"
         loading="eager"
@@ -92,13 +106,16 @@ const beskrivelse = verk.beskrivelse
       <div class="tekst">
         <h1>{verk.tittel}</h1>
         {
-          verk.kunstner && (
+          visKunstner && (
             <p class="kunstner">
               <a href={`/kunstnere/${verk.kunstner.slug}`}>{verk.kunstner.navn}</a>
             </p>
           )
         }
 
+        {erPlassholder && (
+          <p class="merkelapp merkelapp--plassholder">Plassholder</p>
+        )}
         {solgt && <p class="merkelapp">Solgt</p>}
 
         {verk.beskrivelse && (
@@ -124,19 +141,21 @@ const beskrivelse = verk.beskrivelse
 
         <p class="foresporsel">
           {
-            solgt
-              ? "Dette verket er solgt. Vi har ofte flere arbeider av samme kunstner."
-              : "Ta kontakt for pris og tilgjengelighet."
+            erPlassholder
+              ? "Dette bildet er ikke til salgs. Ta kontakt så forteller vi hva vi har tilgjengelig."
+              : solgt
+                ? "Dette verket er solgt. Vi har ofte flere arbeider av samme kunstner."
+                : "Ta kontakt for pris og tilgjengelighet."
           }
         </p>
         <a class="knapp" href={`mailto:post@artz.no?subject=${emne}`}>
-          Spør om dette verket
+          {erPlassholder ? "Ta kontakt" : "Spør om dette verket"}
         </a>
       </aside>
     </div>
 
     {
-      andreVerk.length > 0 && verk.kunstner && (
+      andreVerk.length > 0 && visKunstner && (
         <section class="mer">
           <p class="stikkord">Flere verk av {verk.kunstner.navn}</p>
           <ul class="rutenett">

@@ -10,11 +10,18 @@ const alle: any[] = await alleVerk();
 const valgtKunstner = Astro.url.searchParams.get("kunstner") ?? "";
 const valgtTeknikk = Astro.url.searchParams.get("teknikk") ?? "";
 
+// Bare ekte verk gir kunstnernavn til filteret. Plassholderne har en
+// kunstnerkobling i dataene, men den vises ikke noe sted, og et filter på et
+// navn som ikke står under bildene ville vært en tilskrivelse i seg selv.
 const kunstnere = [
   ...new Map(
-    alle.filter((v) => v.kunstner).map((v) => [v.kunstner.slug, v.kunstner])
+    alle
+      .filter((v) => v.kunstner && v.plassholder !== true)
+      .map((v) => [v.kunstner.slug, v.kunstner])
   ).values(),
 ].sort((a: any, b: any) => a.navn.localeCompare(b.navn, "nb"));
+
+const harPlassholdere = alle.some((v) => v.plassholder === true);
 
 const teknikker = [...new Set(alle.map((v) => v.teknikk).filter(Boolean))].sort(
   (a, b) => (TEKNIKK_NAVN[a] ?? a).localeCompare(TEKNIKK_NAVN[b] ?? b, "nb")
@@ -22,7 +29,7 @@ const teknikker = [...new Set(alle.map((v) => v.teknikk).filter(Boolean))].sort(
 
 const verk = alle.filter(
   (v) =>
-    (!valgtKunstner || v.kunstner?.slug === valgtKunstner) &&
+    (!valgtKunstner || (v.plassholder !== true && v.kunstner?.slug === valgtKunstner)) &&
     (!valgtTeknikk || v.teknikk === valgtTeknikk)
 );
 
@@ -44,6 +51,16 @@ function url(endring: Record<string, string>) {
       Original grafikk, malerier og skulptur. Ta kontakt for pris og
       tilgjengelighet.
     </p>
+
+    {
+      harPlassholdere && (
+        <p class="forbehold">
+          Bildene merket «Plassholder» er generativ grafikk laget for ARTZ mens
+          vi venter på verksbilder fra kunstnerne. De er ikke verk av
+          kunstnerne, og står derfor uten kunstnernavn.
+        </p>
+      )
+    }
 
     {
       alle.length > 0 && (
@@ -114,6 +131,13 @@ function url(endring: Record<string, string>) {
 </Base>
 
 <style>
+  .forbehold {
+    margin-top: 1.25rem;
+    max-width: 52ch;
+    font-size: 0.9375rem;
+    color: var(--tusj-dempet);
+  }
+
   .filtre {
     display: grid;
     gap: 1.5rem;

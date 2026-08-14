@@ -58,7 +58,7 @@ const varselTekst = varsel[status];
   <body>
     {varselTekst && <p class="varsel">{varselTekst}</p>}
 
-    <header class="topp">
+    <header class="topp korn">
       <div class="innhold topp__rad">
         <a class="logo" href="/">ARTZ</a>
         <nav aria-label="Hovedmeny">
@@ -84,7 +84,7 @@ const varselTekst = varsel[status];
       <slot />
     </main>
 
-    <footer class="bunn formlag formlag--klipp">
+    <footer class="bunn korn formlag formlag--klipp">
       <Former variant="bue" klasse="form--bunn" />
       <div class="innhold bunn__rad overform">
         <div>
@@ -101,15 +101,48 @@ const varselTekst = varsel[status];
     </footer>
 
     <style>
+      /* Toppen ligger som et tynt slør over innholdet som ruller under.
+         Papirfargen med litt gjennomsikt, ikke glass. Effekten skal knapt
+         merkes, den er der for å vise at siden fortsetter bak menyen.
+         rgba-linja er reserve for nettlesere uten color-mix. Uten den
+         ville menyen blitt helt gjennomsiktig der. */
       .topp {
         border-bottom: 1px solid var(--strek);
         position: sticky;
         top: 0;
-        background: var(--papir);
         z-index: 10;
+        background: rgba(255, 254, 252, 0.88);
+        background: color-mix(in srgb, var(--papir-hevet) 88%, transparent);
+        backdrop-filter: blur(14px) saturate(1.35);
+        --korn-styrke: 0.2;
+      }
+
+      /* Ingen -webkit-backdrop-filter her. Astros minifier ser de to
+         erklæringene som samme egenskap og beholder bare den siste, så det
+         prefiksede paret overlever ikke bygget uansett. Verifisert i
+         dist-CSS-en 14. august 2026. Safari før 18 får derfor regelen
+         under: heldekkende papir, ingen gjennomsikt. */
+
+      /* Uten backdrop-filter blir gjennomsikten bare uskarp tekst under
+         menyen. Da er heldekkende papir riktig. */
+      @supports not (backdrop-filter: blur(1px)) {
+        .topp {
+          background: var(--papir-hevet);
+        }
+      }
+
+      /* Noen slår av gjennomsikt i systeminnstillingene, ofte fordi tekst
+         over urolig bakgrunn er vanskelig å lese. Da respekterer vi det. */
+      @media (prefers-reduced-transparency: reduce) {
+        .topp {
+          background: var(--papir-hevet);
+          backdrop-filter: none;
+        }
       }
 
       .topp__rad {
+        position: relative;
+        z-index: 1;
         display: flex;
         flex-wrap: wrap;
         align-items: baseline;
@@ -148,10 +181,15 @@ const varselTekst = varsel[status];
         border-bottom-color: var(--tusj);
       }
 
+      /* Bunnen starter på hevet papir og lander på papir når kornet er
+         lagt på. Se --papir-hevet i global.css. Uten den blir bunnen et
+         grått bånd mot resten av siden. */
       .bunn {
         border-top: 1px solid var(--strek);
         margin-top: clamp(2rem, 5vw, 3.5rem);
         padding-block: 2.25rem;
+        background: var(--papir-hevet);
+        --korn-styrke: 0.24;
       }
 
       .bunn__rad {

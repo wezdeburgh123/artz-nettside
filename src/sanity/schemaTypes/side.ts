@@ -51,6 +51,63 @@ export const side = defineType({
       ],
     }),
     defineField({
+      name: "sitat",
+      title: "Uthevet setning",
+      type: "text",
+      rows: 3,
+      description:
+        "En eller to setninger som skal stå stort midt på forsiden. La feltet stå tomt for å skjule det.",
+      hidden: ({ document }: any) => document?.nokkel !== "forside",
+    }),
+    defineField({
+      name: "bein",
+      title: "De tre boksene på forsiden",
+      type: "array",
+      description:
+        "Overskrift og tekst i de tre boksene under åpningen. Hvilken side boksen peker til velges fra lista.",
+      hidden: ({ document }: any) => document?.nokkel !== "forside",
+      of: [
+        {
+          type: "object",
+          name: "beinPunkt",
+          title: "Boks",
+          fields: [
+            {
+              name: "tittel",
+              title: "Overskrift",
+              type: "string",
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: "tekst",
+              title: "Tekst",
+              type: "text",
+              rows: 3,
+            },
+            {
+              name: "lenke",
+              title: "Hvilken side skal boksen peke til?",
+              type: "string",
+              options: {
+                list: [
+                  { title: "Verk", value: "/galleri" },
+                  { title: "Utsmykking", value: "/utsmykking" },
+                  { title: "Rammeverkstedet", value: "/rammeverkstedet" },
+                  { title: "Grafikksenteret", value: "/grafikksenteret" },
+                  { title: "Om kunsten", value: "/om-kunsten" },
+                  { title: "Kontakt", value: "/kontakt" },
+                ],
+                layout: "dropdown",
+              },
+              validation: (Rule: any) => Rule.required(),
+            },
+          ],
+          preview: { select: { title: "tittel", subtitle: "tekst" } },
+        },
+      ],
+      validation: (Rule) => Rule.max(3),
+    }),
+    defineField({
       name: "tekst",
       title: "Tekst",
       type: "array",
