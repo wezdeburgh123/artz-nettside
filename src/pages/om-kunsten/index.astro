@@ -17,17 +17,22 @@ function dato(verdi: string) {
 }
 ---
 
-<Base tittel="Aktuelt" beskrivelse="Utstillinger, oppdrag og nyheter fra ARTZ.">
+<Base
+  tittel="Om kunsten"
+  beskrivelse="Tekster om enkeltverk og kunstnerne bak dem, skrevet for ARTZ."
+>
   <section class="seksjon innhold">
-    <h1>Aktuelt</h1>
-    <p class="ingress">Utstillinger, oppdrag og nyheter.</p>
+    <h1>Om kunsten</h1>
+    <p class="ingress">
+      Tekster om enkeltverk og kunstnerne bak dem.
+    </p>
 
     {
       saker.length > 0 ? (
         <ul class="saker">
           {saker.map((s: any) => (
             <li class="sak">
-              <a class="sak__bilde" href={`/aktuelt/${s.slug}`}>
+              <a class="sak__bilde" href={`/om-kunsten/${s.slug}`}>
                 <Bilde
                   kilde={s.bilde}
                   alt={s.bilde?.alt || s.tittel}
@@ -40,14 +45,14 @@ function dato(verdi: string) {
                   <time datetime={s.dato}>{dato(s.dato)}</time>
                   {s.sted && <> · {s.sted}</>}
                 </p>
-                <h2><a href={`/aktuelt/${s.slug}`}>{s.tittel}</a></h2>
+                <h2><a href={`/om-kunsten/${s.slug}`}>{s.tittel}</a></h2>
                 {s.ingress && <p>{s.ingress}</p>}
               </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p>Ingen saker publisert ennå.</p>
+        <p>Ingen tekster publisert ennå.</p>
       )
     }
   </section>

@@ -8,7 +8,7 @@ const { slug } = Astro.params;
 const sak: any = slug ? await sakMedSlug(slug) : null;
 
 if (!sak) {
-  return Astro.redirect("/aktuelt", 302);
+  return Astro.redirect("/om-kunsten", 302);
 }
 
 const dato = sak.dato
@@ -22,7 +22,7 @@ const dato = sak.dato
 
 <Base tittel={sak.tittel} beskrivelse={sak.ingress}>
   <article class="seksjon innhold sak">
-    <p class="stikkord"><a href="/aktuelt">Aktuelt</a></p>
+    <p class="stikkord"><a href="/om-kunsten">Om kunsten</a></p>
     <h1>{sak.tittel}</h1>
     <p class="meta">
       <time datetime={sak.dato}>{dato}</time>

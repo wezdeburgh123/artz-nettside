@@ -155,22 +155,22 @@
 
 [[redirects]]
   from = "/hva-skjer/*"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
 [[redirects]]
   from = "/nyheter/*"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
 [[redirects]]
   from = "/category/aktuelt/*"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
 [[redirects]]
   from = "/category/uncategorized/*"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
 [[redirects]]
@@ -195,19 +195,63 @@
 
 [[redirects]]
   from = "/kunsthistore"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
-# Kunsthistorie-artiklene fra 2018. Peker til Aktuelt inntil de eventuelt
-# legges inn på nytt som egne saker.
+# Kunsthistorie-artiklene fra 2018, nå lagt inn som egne tekster under
+# Om kunsten. Hver gammel adresse peker til sin egen tekst. Rekkefølgen
+# betyr noe: Netlify tar første treff, så de spesifikke må stå før /2018/*.
+# «kai-fjelds» var en skrivefeil i den gamle adressen.
+
+[[redirects]]
+  from = "/2018/10/11/vilhelm-hammershoi-portrett-av-tid/*"
+  to = "/om-kunsten/vilhelm-hammershoi-portrett-av-tid"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/between-the-clock-and-the-bed-jasper-johns/*"
+  to = "/om-kunsten/between-the-clock-and-the-bed-jasper-johns"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/kai-fjelds/*"
+  to = "/om-kunsten/kai-fjell-ufred"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/inger-sitter-fargenes-revolusjon/*"
+  to = "/om-kunsten/inger-sitter-fargenes-revolusjon"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/hakon-blekens-utoya/*"
+  to = "/om-kunsten/hakon-blekens-utoya"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/fuglene-fra-gaza-hakon-gullvag/*"
+  to = "/om-kunsten/fuglene-fra-gaza-hakon-gullvag"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/nikolai-astrup/*"
+  to = "/om-kunsten/nikolai-astrup"
+  status = 301
+
+[[redirects]]
+  from = "/2018/10/11/hans-gude/*"
+  to = "/om-kunsten/hans-gude"
+  status = 301
+
+# Alt annet fra WordPress-arkivet
 [[redirects]]
   from = "/2018/*"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
 [[redirects]]
   from = "/2021/*"
-  to = "/aktuelt"
+  to = "/om-kunsten"
   status = 301
 
 # Rester fra WordPress
@@ -234,4 +278,16 @@
 [[redirects]]
   from = "/wp-login.php"
   to = "/admin"
+  status = 301
+
+
+# Seksjonen het Aktuelt fram til 14. august 2026.
+[[redirects]]
+  from = "/aktuelt/*"
+  to = "/om-kunsten/:splat"
+  status = 301
+
+[[redirects]]
+  from = "/aktuelt"
+  to = "/om-kunsten"
   status = 301

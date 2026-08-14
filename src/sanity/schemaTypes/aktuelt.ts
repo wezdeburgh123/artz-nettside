@@ -2,7 +2,9 @@ import { defineField, defineType } from "sanity";
 
 export const aktuelt = defineType({
   name: "aktuelt",
-  title: "Aktuelt",
+  // Visningsnavnet er «Om kunsten». Dokumenttypen heter fortsatt aktuelt,
+  // fordi et typenavn er en teknisk nøkkel og et bytte krever migrering.
+  title: "Om kunsten",
   type: "document",
   fields: [
     defineField({
@@ -23,7 +25,7 @@ export const aktuelt = defineType({
       name: "dato",
       title: "Dato",
       type: "date",
-      description: "Datoen saken gjelder. Nyeste sak vises øverst.",
+      description: "Datoen teksten ble publisert. Nyeste vises øverst.",
       options: { dateFormat: "DD.MM.YYYY" },
       validation: (Rule) => Rule.required().error("Sett en dato."),
     }),

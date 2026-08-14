@@ -20,10 +20,10 @@ export const struktur: StructureResolver = (S) =>
             .defaultOrdering([{ field: "_createdAt", direction: "desc" }])
         ),
       S.listItem()
-        .title("Aktuelt")
+        .title("Om kunsten")
         .child(
           S.documentTypeList("aktuelt")
-            .title("Aktuelt")
+            .title("Om kunsten")
             .defaultOrdering([{ field: "dato", direction: "desc" }])
         ),
       S.divider(),
