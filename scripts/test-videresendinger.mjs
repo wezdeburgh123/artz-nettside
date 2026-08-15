@@ -11,7 +11,7 @@
 
 import { readFileSync } from "node:fs";
 
-const BASIS = process.argv[2] ?? "https://dainty-biscuit-aa3348.netlify.app";
+const BASIS = process.argv[2] ?? "https://artz-nettside.netlify.app";
 
 const toml = readFileSync("netlify.toml", "utf8");
 
