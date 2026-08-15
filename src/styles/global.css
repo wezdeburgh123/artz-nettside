@@ -45,6 +45,12 @@ html {
 
 body {
   margin: 0;
+  /* Bunnen skal alltid stå nederst, også på korte sider. Uten dette
+     stopper footeren der innholdet slutter, og resten av skjermen står
+     igjen som en tom flate uten korn. Observert 15. august 2026. */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: var(--papir);
   color: var(--tusj);
   font-family: var(--serif);
@@ -52,6 +58,11 @@ body {
   font-size: 1.0625rem;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Skyver bunnen ned når innholdet er kortere enn skjermen. */
+main {
+  flex: 1 0 auto;
 }
 
 img {
