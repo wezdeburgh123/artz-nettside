@@ -22,9 +22,11 @@ const par = [...toml.matchAll(/\[\[redirects\]\]\s*\n\s*from = "([^"]+)"\s*\n\s*
 
 console.log(`Tester ${par.length} videresendinger mot ${BASIS}\n`);
 
-// /noe/* testes som /noe/test. Konkrete adresser testes som de står.
+// /noe/* testes som /noe/PROVE. Konkrete adresser testes som de står.
+const PROVE = "test";
+
 function proveadresse(fra) {
-  if (fra.endsWith("/*")) return fra.slice(0, -2) + "/test";
+  if (fra.endsWith("/*")) return fra.slice(0, -2) + "/" + PROVE;
   if (fra.endsWith("*")) return fra.slice(0, -1);
   return fra;
 }
@@ -63,7 +65,12 @@ for (const { fra, til } of par) {
       continue;
     }
 
-    const forventet = til.replace(/\/$/, "");
+    // Netlify setter inn det som traff jokertegnet der :splat står, så
+    // /aktuelt/* -> /om-kunsten/:splat lander på /om-kunsten/PROVE når vi
+    // tester med /aktuelt/PROVE. Uten denne linja meldte skriptet
+    // «ANNET MÅL» på en videresending som virket helt riktig.
+    // Observert 15. august 2026, første gang lista ble kjørt mot produksjon.
+    const forventet = til.replace(/:splat/g, PROVE).replace(/\/$/, "");
     const faktisk = maal.pathname.replace(/\/$/, "");
     if (faktisk !== forventet) {
       console.log(`ANNET MÅL  ${sti} -> ${faktisk}, ventet ${forventet}`);
