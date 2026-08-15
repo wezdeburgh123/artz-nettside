@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import Former from "../components/Former.astro";
-import { datasettStatus } from "../lib/sanity";
+import { datasettStatus, hentInnstillinger } from "../lib/sanity";
 
 interface Props {
   tittel: string;
@@ -25,6 +25,25 @@ const meny = [
 ];
 
 const sti = Astro.url.pathname;
+
+// Bunnen redigeres i Studio under «Bunnen på nettsiden». Felt som står
+// tomme faller tilbake på standardteksten, se src/lib/standardtekst.ts.
+// Linjene settes sammen her framfor i markupen, slik at bunnen tåler at
+// hvilket som helst felt står tomt uten at det blir et hull eller et
+// linjeskift for mye.
+const bunn = await hentInnstillinger();
+
+const adresselinjer = bunn.adresse
+  ? bunn.adresse.split("\n").map((l) => l.trim()).filter(Boolean)
+  : [];
+
+const impressum = [bunn.orgnavn, bunn.orgnummer ? `Org.nr. ${bunn.orgnummer}` : ""]
+  .filter(Boolean)
+  .join(" \u00b7 ");
+
+const rettigheter = [`\u00a9 ${new Date().getFullYear()} ARTZ.`, bunn.rettighetslinje]
+  .filter(Boolean)
+  .join(" ");
 
 const status = await datasettStatus();
 const varsel: Record<string, string | null> = {
@@ -89,12 +108,26 @@ const varselTekst = varsel[status];
         <div>
           <p class="stikkord">ARTZ</p>
           <p class="meta">
-            Kunstformidling, utsmykking og rammeverksted.<br />
-            <a href="mailto:post@artz.no">post@artz.no</a>
+            {bunn.beskrivelse && <Fragment>{bunn.beskrivelse}<br /></Fragment>}
+            {bunn.epost && <a href={`mailto:${bunn.epost}`}>{bunn.epost}</a>}
+            {bunn.epost && bunn.telefon && <br />}
+            {bunn.telefon && (
+              <a href={`tel:${bunn.telefon.replace(/\s/g, "")}`}>{bunn.telefon}</a>
+            )}
           </p>
+          {
+            adresselinjer.length > 0 && (
+              <p class="meta">
+                {adresselinjer.map((linje, i) => (
+                  <Fragment>{i > 0 && <br />}{linje}</Fragment>
+                ))}
+              </p>
+            )
+          }
         </div>
         <p class="meta">
-          © {new Date().getFullYear()} ARTZ. Alle verk tilhører kunstnerne.
+          {rettigheter}
+          {impressum && <Fragment><br />{impressum}</Fragment>}
         </p>
       </div>
     </footer>

@@ -229,3 +229,20 @@ const sider: Record<string, any> = {
 };
 
 export const sideMedNokkel = (nokkel: string) => sider[nokkel] ?? null;
+
+// Bunnen på nettstedet. Reserve fram til dokumentet «Bunnen på nettsiden»
+// er lagt inn i Sanity, og etterpå reserve for de feltene André lar stå
+// tomme. Alt her sto tidligere hardkodet i src/layouts/Base.astro.
+//
+// Adresse, juridisk navn og organisasjonsnummer står bevisst tomme. De er
+// ikke kjent per 15. august 2026, og et oppdiktet organisasjonsnummer i
+// impressum er verre enn ingen impressum.
+export const standardInnstillinger = {
+  beskrivelse: "Kunstformidling, utsmykking og rammeverksted.",
+  epost: "post@artz.no",
+  telefon: "",
+  adresse: "",
+  orgnavn: "",
+  orgnummer: "",
+  rettighetslinje: "Alle verk tilhører kunstnerne.",
+};

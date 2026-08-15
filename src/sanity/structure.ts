@@ -1,6 +1,10 @@
 import type { StructureResolver } from "sanity/structure";
 
-// Menyen eieren ser i Studio. Fire punkter, ingenting mer.
+// Menyen eieren ser i Studio. Fem punkter, ingenting mer.
+//
+// Nettstedinnstillinger er et enkeltdokument og åpnes direkte, uten liste
+// foran. Derfor S.document() og ikke S.documentTypeList(). Dokument-ID-en er
+// låst til «innstillinger», slik at det aldri kan bli to av dem.
 export const struktur: StructureResolver = (S) =>
   S.list()
     .title("Innhold")
@@ -33,5 +37,14 @@ export const struktur: StructureResolver = (S) =>
           S.documentTypeList("side")
             .title("Faste sider")
             .defaultOrdering([{ field: "tittel", direction: "asc" }])
+        ),
+      S.listItem()
+        .title("Bunnen på nettsiden")
+        .id("innstillinger")
+        .child(
+          S.document()
+            .schemaType("innstillinger")
+            .documentId("innstillinger")
+            .title("Bunnen på nettsiden")
         ),
     ]);

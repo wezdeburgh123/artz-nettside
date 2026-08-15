@@ -225,6 +225,28 @@ export const sideMedNokkel = async (nokkel: string) => {
   return fraSanity ?? standard.sideMedNokkel(nokkel);
 };
 
+// Bunnen på nettstedet. Ett enkeltdokument med fast ID i Sanity. Felt som
+// står tomme faller tilbake på standardteksten, felt for felt. Grunnen til at
+// det er felt for felt og ikke hele objektet: lar André adressefeltet stå
+// tomt, skal e-postadressen hans likevel gjelde.
+export const hentInnstillinger = async () => {
+  const fraSanity = await hent<any | null>(
+    defineQuery(`*[_type == "innstillinger"][0]{
+      beskrivelse, epost, telefon, adresse, orgnavn, orgnummer, rettighetslinje
+    }`),
+    {},
+    null
+  );
+
+  const ut: Record<string, string> = { ...standard.standardInnstillinger };
+  for (const [nokkel, verdi] of Object.entries(fraSanity ?? {})) {
+    if (typeof verdi === "string" && verdi.trim() !== "") {
+      ut[nokkel] = verdi.trim();
+    }
+  }
+  return ut;
+};
+
 // ---------------------------------------------------------------------------
 // Status på datasettet, brukt til varselbåndet på toppen av nettstedet.
 // ---------------------------------------------------------------------------

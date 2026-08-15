@@ -46,7 +46,13 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
     // Skjul "opprett ny"-snarveier vi ikke vil ha i menyen.
-    templates: (maler) => maler.filter((m) => !m.id.startsWith("verk-by-")),
+    // «innstillinger» er et enkeltdokument med fast ID og skal aldri kunne
+    // opprettes fra pluss-knappen. Da ville det blitt to av dem, og bare det
+    // ene ville vist seg på nettstedet.
+    templates: (maler) =>
+      maler.filter(
+        (m) => !m.id.startsWith("verk-by-") && m.id !== "innstillinger"
+      ),
   },
 
   // Studio starter på norsk uansett nettleserspråk.
