@@ -33,8 +33,9 @@ function altTekst(k: any): string {
     {
       viserPlassholdere && (
         <p class="forbehold">
-          Der vi ennå ikke har verk fra kunstneren, viser kortet en generativ
-          plassholder laget for ARTZ. Den er ikke et verk av kunstneren.
+          Kortene som er merket <span class="forbehold__ord">Plassholder</span>
+          viser en generativ illustrasjon laget for ARTZ. Den er ikke et verk av
+          kunstneren.
         </p>
       )
     }
@@ -45,7 +46,14 @@ function altTekst(k: any): string {
           {kunstnere.map((k: any) => (
             <li>
               <a class="kunstner" href={`/kunstnere/${k.slug}`}>
-                <Bilde kilde={k.kortbilde} alt={altTekst(k)} bredde={600} />
+                <div class="kunstner__flate">
+                  <Bilde kilde={k.kortbilde} alt={altTekst(k)} bredde={600} />
+                  {k.kortbildekilde === "plassholder" && (
+                    <span class="merkelapp merkelapp--plassholder kunstner__merke">
+                      Plassholder
+                    </span>
+                  )}
+                </div>
                 <h2>{k.navn}</h2>
                 {k.levetid && <p class="meta">{k.levetid}</p>}
               </a>
@@ -78,6 +86,28 @@ function altTekst(k: any): string {
   .kunstner {
     border: 0;
     display: block;
+  }
+
+  /* Merket ligger over bildeflaten, ikke under navnet. Forbeholdet gjelder
+     bildet, og leses derfor sammen med bildet. Papirbakgrunn gjør at det
+     står like tydelig over et lyst som over et mørkt motiv. */
+  .kunstner__flate {
+    position: relative;
+  }
+
+  .kunstner__merke {
+    position: absolute;
+    left: 0.55rem;
+    bottom: 0.55rem;
+    background: var(--papir);
+  }
+
+  .forbehold__ord {
+    font-family: var(--sans);
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tusj);
   }
 
   .kunstner h2 {
