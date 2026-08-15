@@ -65,7 +65,7 @@ export const standardBein = [
     _key: "bein-ramme",
     tittel: "Rammeverksted",
     tekst:
-      "Komplett og moderne rammeverksted. Håndlagde rammer i høy kvalitet, tilpasset hvert verk.",
+      "Moderne verksted, tradisjonelt håndverk. Håndlagde rammer tilpasset hvert verk.",
     lenke: "/rammeverkstedet",
   },
 ];
@@ -238,7 +238,7 @@ export const sideMedNokkel = (nokkel: string) => sider[nokkel] ?? null;
 // ikke kjent per 15. august 2026, og et oppdiktet organisasjonsnummer i
 // impressum er verre enn ingen impressum.
 export const standardInnstillinger = {
-  beskrivelse: "Kunstformidling, utsmykking og rammeverksted.",
+  beskrivelse: "Kunstformidling, utsmykking og eget rammeverksted.",
   epost: "post@artz.no",
   telefon: "",
   adresse: "",
