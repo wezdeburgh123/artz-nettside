@@ -199,9 +199,31 @@
     merk();
   });
 
-  // Fyrer også på helt vanlig førstegangslasting, ikke bare ved navigering.
+  // Fyrer bare på sider som har ClientRouter. Sider uten, som
+  // /registerdrift, dekkes av det direkte kallet nederst.
   document.addEventListener("astro:page-load", () => {
     merk();
     vis();
   });
+
+  // Blir fanen lastet i bakgrunnen, leverer ikke Chrome treff fra
+  // IntersectionObserver før fanen faktisk tegnes. Da står blokkene igjen
+  // usynlige til noen ser på dem, og det er riktig nok, men vi vil ikke
+  // hvile på at observatøren våkner av seg selv.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") vis();
+  });
+
+  // Kjøres med én gang, ikke bare fra astro:page-load.
+  //
+  // Målt i produksjon 16. august 2026: /registerdrift var helt blank.
+  // Sida har ikke ClientRouter, fordi p5 ikke tåler et sidebytte uten
+  // omlasting, og uten ClientRouter sender ikke Astro astro:page-load.
+  // Da ble verken oppmerkingen eller artz-klar kjørt, og siden ble
+  // liggende på opacity 0. Nødutgangen i CSS-en reddet den ikke, fordi
+  // en CSS-animasjon står stille i en fane som ikke tegnes.
+  //
+  // Skriptet er en modul, altså utsatt, så DOM-en er ferdig lest her.
+  merk();
+  vis();
 </script>

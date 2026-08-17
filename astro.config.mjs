@@ -46,18 +46,24 @@ export default defineConfig({
   site: "https://artz.no",
   // Utviklingsverktøylinja er ikke til nytte for noen i dette prosjektet.
   devToolbar: { enabled: false },
-  // Forhåndshenting.
+  // Forhåndshenting er av.
   //
-  // Sidene kjører SSR uten CDN, og svartiden er målt til 1,0 til 1,5 sekunder
-  // 16. august 2026. Uten forhåndshenting ville klikket gitt en uttoning og så
-  // et hvitt hull mens siden ble hentet. Med hover-strategien starter hentinga
-  // idet musepekeren treffer lenka, altså typisk et par hundre millisekunder
-  // før klikket.
+  // Den var på i noen timer 16. august 2026, og målingen i produksjon viste at
+  // den ikke virker her: hover ga en `link`-forespørsel på /kunstnere, og ni
+  // sekunder senere hentet navigeringen den samme sida på nytt over nettet,
+  // 4227 byte, 547 ms. Ingen gjenbruk. Årsaken er at HTML-en sendes uten
+  // Cache-Control, så det forhåndshentede svaret ikke kan lagres.
   //
-  // Forbehold: forhåndshenting legger svaret i nettleserens cache, og HTML-en
-  // vår sendes uten Cache-Control. Om nettleseren faktisk gjenbruker svaret er
-  // ikke målt. Måles i DOM-en før vi sier at dette virker.
-  prefetch: { prefetchAll: true, defaultStrategy: "hover" },
+  // Prisen for å la den stå på er reell: hver hover over en meny utløser en
+  // full SSR-render med Sanity-spørringer. Dobbelt arbeid uten gevinst.
+  //
+  // `false` er det eneste som faktisk slår den av. ClientRouter kaller
+  // prefetch selv, og Astro sjekker `config.prefetch === false`, ikke om
+  // objektet er tomt. Se node_modules/astro/dist/transitions/vite-plugin-transitions.js
+  //
+  // Skal den på igjen, må HTML-en få en kort Cache-Control først, og det
+  // valget rører premisset om at en publisering er synlig med én gang.
+  prefetch: false,
   integrations: [
     sanity({
       projectId: prosjektId || "placeholder",
