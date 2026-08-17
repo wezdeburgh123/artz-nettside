@@ -1,0 +1,207 @@
+---
+// Sideoverganger og innanimasjon.
+//
+// Bestilt 16. august 2026: sidene skal bygges opp mykt, én blokk om gangen,
+// og et klikk skal tone ut det som står, raskt, før den nye siden bygges opp
+// igjen uten omlasting.
+//
+// Tre deler:
+//   1. Utgang. Et data-ut på <html> toner ned hele body på 150 ms.
+//      Navigasjonen holdes tilbake til utgangen har fått gå ferdig.
+//   2. Oppmerking. Blokkene får data-anim og starter usynlige. Det skjer i
+//      astro:after-swap, altså etter at den nye siden er satt inn, men før
+//      nettleseren rekker å tegne den.
+//   3. Inngang. En IntersectionObserver slipper fram det som er i synsfeltet,
+//      med 70 ms mellom hver blokk. Resten kommer når man ruller dit.
+//
+// Faller JavaScript ut, står siden som før. Se nødutgangen i CSS-en under.
+// Er «reduser bevegelse» slått på i systemet, gjør denne komponenten
+// ingenting i det hele tatt.
+---
+
+<script is:inline>
+  // Skjuler siden i det korte vinduet mellom første tegning og at
+  // oppmerkingen har kjørt. Uten dette blinker innholdet fram og forsvinner
+  // igjen på trege forbindelser. Klassen settes bare når JavaScript faktisk
+  // kjører, så en leser uten JavaScript ser aldri en skjult side.
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("anim");
+  }
+</script>
+
+<style is:global>
+  /* --- Nødutgang -------------------------------------------------------
+     Skriptet under skal fjerne dette i samme øyeblikk som blokkene er
+     merket opp. Kommer det aldri så langt, for eksempel fordi en modul
+     ikke lastet, kommer siden fram av seg selv etter 2,5 sekunder. En
+     treg side er dårlig, en usynlig side er ødelagt. */
+  html.anim body {
+    opacity: 0;
+    animation: artz-nodutgang 1ms 2500ms forwards;
+  }
+
+  html.anim.artz-klar body {
+    opacity: 1;
+    animation: none;
+  }
+
+  @keyframes artz-nodutgang {
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* --- Inngang ---------------------------------------------------------
+     Rolig oppdrift: 14 px, 550 ms, ease-out. Forsinkelsen settes per blokk
+     av skriptet og styrer rekkefølgen. */
+  [data-anim] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 550ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--forsink, 0ms),
+      transform 550ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--forsink, 0ms);
+  }
+
+  [data-anim].inne {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* --- Utgang ----------------------------------------------------------
+     !important med vilje. Regelen må slå html.anim.artz-klar body, som er
+     mer spesifikk, og som fortsatt står på den aller første siden i økta.
+     Uten den ville det første klikket ikke tont ut noe som helst. */
+  html[data-ut] body {
+    opacity: 0 !important;
+    transition: opacity 150ms cubic-bezier(0.4, 0, 1, 1) !important;
+  }
+
+  /* Nettleserens egen kryssfading mellom to sider slås av. Vi styrer både
+     ut og inn selv, og to overganger oppå hverandre gir en dobbeleksponering
+     midt i byttet. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+</style>
+
+<script>
+  const rolig = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // Dekor, skjult innhold og lyskassen. Ikke blokker på siden.
+  const HOPP_OVER =
+    ".form, [aria-hidden='true'], [hidden], dialog, script, style, link, .astro-route-announcer";
+
+  // Lister der hvert kort skal komme for seg, framfor at hele rutenettet
+  // kommer som én flate.
+  const DELES = "ul.rutenett, ul.bein, ul.punkter";
+
+  // Bolker vi går inn i framfor å ta som én enhet.
+  const GAA_INN_I = "section, .filtre, .kolonner, .under";
+
+  function samle(holder: Element, ut: Element[], dybde: number) {
+    for (const barn of holder.children) {
+      if (barn.matches(HOPP_OVER)) continue;
+      if (barn.matches(DELES)) {
+        for (const kort of barn.children) ut.push(kort);
+        continue;
+      }
+      if (dybde > 0 && barn.matches(GAA_INN_I)) {
+        samle(barn, ut, dybde - 1);
+        continue;
+      }
+      ut.push(barn);
+    }
+  }
+
+  // Hva som teller som én blokk. Toppen og bunnen er én hver. Inne i main
+  // går vi ned til innholdsbeholderen, fordi .innhold bare er en bredde og
+  // ikke noe leseren oppfatter som et element.
+  function blokker(): Element[] {
+    const ut: Element[] = [];
+
+    const topp = document.querySelector("body > header");
+    if (topp) ut.push(topp);
+
+    for (const seksjon of document.querySelectorAll("main > *")) {
+      if (seksjon.matches(HOPP_OVER)) continue;
+      const holder = seksjon.matches(".innhold")
+        ? seksjon
+        : (seksjon.querySelector(":scope > .innhold") ?? seksjon);
+      samle(holder, ut, 1);
+    }
+
+    const bunn = document.querySelector("body > footer");
+    if (bunn) ut.push(bunn);
+
+    return ut;
+  }
+
+  let vakt: IntersectionObserver | null = null;
+
+  function merk() {
+    if (rolig.matches) return;
+    for (const e of blokker()) e.setAttribute("data-anim", "");
+    document.documentElement.classList.add("artz-klar");
+  }
+
+  function vis() {
+    if (rolig.matches) return;
+    vakt?.disconnect();
+
+    vakt = new IntersectionObserver(
+      (treff, obs) => {
+        treff
+          .filter((t) => t.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+          .forEach((t, i) => {
+            // Taket på åtte holder rekkefølgen synlig uten at det siste
+            // kortet i et rutenett på 43 kommer tre sekunder etter det
+            // første. Ruller man sakte, kommer blokkene én og én uansett,
+            // fordi de da treffer observatøren hver for seg.
+            (t.target as HTMLElement).style.setProperty(
+              "--forsink",
+              `${Math.min(i, 8) * 70}ms`
+            );
+            t.target.classList.add("inne");
+            obs.unobserve(t.target);
+          });
+      },
+      { rootMargin: "0px 0px -6% 0px" }
+    );
+
+    for (const e of document.querySelectorAll("[data-anim]:not(.inne)")) {
+      vakt.observe(e);
+    }
+  }
+
+  // Utgangen. Astro henter den nye siden i loader-en, og vi pakker den inn
+  // så navigasjonen ikke kan bli ferdig før uttoningen har gått. Det som tar
+  // lengst tid bestemmer: en rask side venter på animasjonen, og en treg side
+  // gjør ikke animasjonen lengre.
+  document.addEventListener("astro:before-preparation", (ev) => {
+    if (rolig.matches) return;
+    document.documentElement.setAttribute("data-ut", "");
+    const hent = (ev as any).loader;
+    (ev as any).loader = async () => {
+      await Promise.all([
+        hent(),
+        new Promise((klar) => setTimeout(klar, 170)),
+      ]);
+    };
+  });
+
+  // Etter byttet er den nye siden på plass, men ennå ikke tegnet. Dette er
+  // det eneste stedet oppmerkingen kan skje uten at innholdet blinker.
+  document.addEventListener("astro:after-swap", () => {
+    document.documentElement.removeAttribute("data-ut");
+    merk();
+  });
+
+  // Fyrer også på helt vanlig førstegangslasting, ikke bare ved navigering.
+  document.addEventListener("astro:page-load", () => {
+    merk();
+    vis();
+  });
+</script>

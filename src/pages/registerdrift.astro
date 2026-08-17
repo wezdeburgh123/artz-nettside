@@ -6,9 +6,14 @@
 import Base from "../layouts/Base.astro";
 ---
 
+{/* overganger={false}: p5 kjører en tegneløkke i et globalt navnerom.
+    Byttes siden ut uten omlasting, kjører løkka videre mot et lerret som
+    ikke finnes lenger. Lenka hit i menyen laster derfor på vanlig vis, og
+    herfra gjør alle lenker det samme fordi ruteren ikke er med på sida. */}
 <Base
   tittel="Registerdrift"
   beskrivelse="Et generativt trykkverksted. Transparente plater lagt ned med feilslått register, platemerke og papirfiber. Lag ditt eget trykk."
+  overganger={false}
 >
   <section class="innhold rd">
     <header class="rd__topp">

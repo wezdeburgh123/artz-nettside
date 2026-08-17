@@ -46,6 +46,18 @@ export default defineConfig({
   site: "https://artz.no",
   // Utviklingsverktøylinja er ikke til nytte for noen i dette prosjektet.
   devToolbar: { enabled: false },
+  // Forhåndshenting.
+  //
+  // Sidene kjører SSR uten CDN, og svartiden er målt til 1,0 til 1,5 sekunder
+  // 16. august 2026. Uten forhåndshenting ville klikket gitt en uttoning og så
+  // et hvitt hull mens siden ble hentet. Med hover-strategien starter hentinga
+  // idet musepekeren treffer lenka, altså typisk et par hundre millisekunder
+  // før klikket.
+  //
+  // Forbehold: forhåndshenting legger svaret i nettleserens cache, og HTML-en
+  // vår sendes uten Cache-Control. Om nettleseren faktisk gjenbruker svaret er
+  // ikke målt. Måles i DOM-en før vi sier at dette virker.
+  prefetch: { prefetchAll: true, defaultStrategy: "hover" },
   integrations: [
     sanity({
       projectId: prosjektId || "placeholder",

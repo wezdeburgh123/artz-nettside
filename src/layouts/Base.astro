@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
 import Former from "../components/Former.astro";
+import Bevegelse from "../components/Bevegelse.astro";
 import { datasettStatus, hentInnstillinger } from "../lib/sanity";
 
 interface Props {
@@ -9,17 +11,24 @@ interface Props {
   // Absolutt bildeadresse til deling på Facebook og lignende. Verksider
   // sender med verket, slik at en delt lenke viser kunsten og ikke bare tekst.
   delebilde?: string;
+  // Sideoverganger uten omlasting. Av på sider som kjører sin egen
+  // tegneløkke, se /registerdrift.
+  overganger?: boolean;
 }
 
-const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted.", delebilde } =
+const { tittel, beskrivelse = "ARTZ formidler samtidskunst til bedrifter, kunstforeninger og private. Salgsutstillinger, utsmykking og eget rammeverksted.", delebilde, overganger = true } =
   Astro.props;
 
+// omlast: lenka går utenom sideovergangene og laster siden på vanlig vis.
+// Registerdrift laster p5 og starter en tegneløkke i et globalt navnerom.
+// Byttes siden inn uten omlasting, kjører løkka videre mot et lerret som
+// ikke finnes lenger.
 const meny = [
   { navn: "Kunstnere", url: "/kunstnere" },
   { navn: "Verk", url: "/galleri" },
   { navn: "Utsmykking", url: "/utsmykking" },
   { navn: "Rammeverkstedet", url: "/rammeverkstedet" },
-  { navn: "Registerdrift", url: "/registerdrift" },
+  { navn: "Registerdrift", url: "/registerdrift", omlast: true },
   { navn: "Om kunsten", url: "/om-kunsten" },
   { navn: "Kontakt", url: "/kontakt" },
 ];
@@ -72,6 +81,8 @@ const varselTekst = varsel[status];
     <meta name="twitter:card" content={delebilde ? "summary_large_image" : "summary"} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).href} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {overganger && <ClientRouter fallback="swap" />}
+    <Bevegelse />
   </head>
   <body>
     {varselTekst && <p class="varsel">{varselTekst}</p>}
@@ -87,6 +98,7 @@ const varselTekst = varsel[status];
                   <a
                     href={punkt.url}
                     aria-current={sti.startsWith(punkt.url) ? "page" : undefined}
+                    data-astro-reload={punkt.omlast || undefined}
                   >
                     {punkt.navn}
                   </a>

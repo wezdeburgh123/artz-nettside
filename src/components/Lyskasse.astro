@@ -43,11 +43,17 @@
 </dialog>
 
 <script>
-  const dialog = document.querySelector<HTMLDialogElement>(".lyskasse");
-  const utlosere = [...document.querySelectorAll<HTMLAnchorElement>("[data-lyskasse]")];
+  // Settes opp på nytt ved hver navigering. Et modulskript i Astro kjører
+  // bare én gang per økt, og med sideoverganger uten omlasting ville
+  // lyskassen vært død på den andre sida man besøkte. astro:page-load fyrer
+  // også på helt vanlig førstegangslasting, så dette dekker begge tilfellene.
+  document.addEventListener("astro:page-load", () => {
+    const dialog = document.querySelector<HTMLDialogElement>(".lyskasse");
+    const utlosere = [...document.querySelectorAll<HTMLAnchorElement>("[data-lyskasse]")];
 
-  // Ingen verk på sida, ingenting å gjøre.
-  if (dialog && utlosere.length > 0) {
+    // Ingen verk på sida, ingenting å gjøre.
+    if (!dialog || utlosere.length === 0) return;
+
     const bilde = dialog.querySelector<HTMLImageElement>(".lyskasse__bilde")!;
     const tittel = dialog.querySelector<HTMLElement>(".lyskasse__tittel")!;
     const meta = dialog.querySelector<HTMLElement>(".lyskasse__meta")!;
@@ -161,7 +167,7 @@
     dialog.addEventListener("close", () => {
       utlosere[naa]?.focus();
     });
-  }
+  });
 </script>
 
 <style is:global>
